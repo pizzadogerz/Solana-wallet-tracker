@@ -1,6 +1,6 @@
 # Solana Wallet Tracker
 
-A serverless Solana transaction tracker. Frontend on S3 + CloudFront, Python Lambda backend via API Gateway, DynamoDB caching, and the Helius API for on-chain Solana data.
+A serverless Solana transaction tracker. Frontend on S3 + CloudFront, Python Lambda backend via API Gateway, DynamoDB caching, and Helius API for on-chain Solana data.
 
 ## Tech Stack
 
@@ -26,11 +26,11 @@ solana-wallet-tracker/
 
 ```
 User (browser)
-   -> S3 + CloudFront (static frontend)
-   -> API Gateway (HTTP API)
-   -> Lambda (Python)
-   -> DynamoDB (cache check/write)
-   -> Helius API (Solana tx data, on cache miss)
+   1. S3 + CloudFront (static frontend)
+   2. API Gateway (HTTP API)
+   3. Lambda (Python)
+   4. DynamoDB (cache check/write)
+   5. Helius API (Solana tx data, on cache miss)
 ```
 
 ## Getting Started
@@ -40,6 +40,4 @@ User (browser)
 3. Get a Helius API key from [helius.dev](https://helius.dev) and store it as an environment variable (never commit it)
 4. Frontend: open `frontend/index.html` locally or serve it with a simple dev server
 
-## Status
-
-🚧 Early setup — architecture planned, build starting.
+## Status: Ongoing
