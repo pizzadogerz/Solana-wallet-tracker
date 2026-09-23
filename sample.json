@@ -1,0 +1,40 @@
+{
+  "wallet": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "asOf": "2026-09-24T04:00:00Z",
+  "totalPnlUsd": 140.00,
+  "holdings": [
+    {
+      "mint": "So11111111111111111111111111111111111111112",
+      "symbol": "SOL",
+      "amount": 12.5,
+      "avgCostUsd": 145.20,
+      "currentPriceUsd": 162.80,
+      "unrealizedPnlUsd": 220.00
+    },
+    {
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "symbol": "USDC",
+      "amount": 350.00,
+      "avgCostUsd": 1.00,
+      "currentPriceUsd": 1.00,
+      "unrealizedPnlUsd": 0.00
+    },
+    {
+      "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "symbol": "JUP",
+      "amount": 500.00,
+      "avgCostUsd": 0.95,
+      "currentPriceUsd": 0.79,
+      "unrealizedPnlUsd": -80.00
+    }
+  ],
+  "history": [
+    { "date": "2026-09-18", "portfolioValueUsd": 2380.15 },
+    { "date": "2026-09-19", "portfolioValueUsd": 2415.60 },
+    { "date": "2026-09-20", "portfolioValueUsd": 2402.90 },
+    { "date": "2026-09-21", "portfolioValueUsd": 2478.35 },
+    { "date": "2026-09-22", "portfolioValueUsd": 2521.75 },
+    { "date": "2026-09-23", "portfolioValueUsd": 2495.20 },
+    { "date": "2026-09-24", "portfolioValueUsd": 2559.75 }
+  ]
+}

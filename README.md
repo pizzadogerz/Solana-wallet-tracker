@@ -11,13 +11,38 @@ A serverless Solana transaction tracker. Frontend on S3 + CloudFront, Python Lam
 - **Hosting:** S3 + CloudFront
 - **Data Source:** Helius API (Solana transactions)
 
+## Team split
+
+- **pizzadogerz** — frontend (`frontend/`, S3 + CloudFront deploy)
+- **Kalachuchi** — backend (`backend/`, Lambda, API Gateway, DynamoDB)
+
+Shared files (edits require PR + other's approval):
+- `sample.json` — API contract
+- `README.md`
+- `.gitignore`
+
+## Workflow
+
+- Branch off latest `main`, one branch per task
+- PR with at least one approval before merge
+- Never push to `main` directly
+
+
+
+
 ## Project Structure
 
 ```
 solana-wallet-tracker/
-├── frontend/       # HTML/CSS/JS static site
-├── backend/        # Lambda function(s)
-├── infra/          # IaC templates (SAM/CDK/Terraform - TBD)
+├── frontend/            # Static site — HTML/CSS/JS, Chart.js from CDN
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
+├── backend/             # Python Lambda
+│   ├── lambda_function.py
+│   ├── requirements.txt
+│   └── deploy.sh
+├── sample.json          # API response contract — source of truth for field names
 ├── .gitignore
 └── README.md
 ```
