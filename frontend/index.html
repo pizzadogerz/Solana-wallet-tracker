@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en" data-theme="classic-dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solana Wallet Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" id="homeBtn" type="button" aria-label="Back to search">
+      <span class="brand-dot" aria-hidden="true"></span> wallet tracker
+    </button>
+    <div class="themes" role="radiogroup" aria-label="Theme">
+      <button type="button" role="radio" data-theme-pick="classic-dark" aria-checked="true" title="Solana dark"><span class="swatch sw-classic-dark"></span></button>
+      <button type="button" role="radio" data-theme-pick="classic-light" aria-checked="false" title="Solana light"><span class="swatch sw-classic-light"></span></button>
+      <button type="button" role="radio" data-theme-pick="lime" aria-checked="false" title="Monochrome lime"><span class="swatch sw-lime"></span></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- SEARCH VIEW -->
+    <section id="searchView" class="view search-view">
+      <div class="mascot-wrap">
+        <div class="bubble" id="bubble" role="status" aria-live="polite">drop a wallet, gng</div>
+        <button class="mascot hero-cat" id="mascot" type="button" aria-label="Poke the dog">
+          <img src="assets/hero-dog.webp" alt="A fluffy white dog dancing" width="200" height="312">
+        </button>
+        <img id="errorPic" class="error-pic" src="assets/error-husky.jpg" alt="A husky pointing at you suspiciously" width="240" height="301" hidden>
+      </div>
+
+      <h1 class="headline">whose bag we checking?</h1>
+
+      <form id="searchForm" class="search" autocomplete="off" novalidate>
+        <label for="addr" class="sr-only">Solana wallet address</label>
+        <input id="addr" name="addr" type="text" spellcheck="false" placeholder="paste a Solana wallet address" maxlength="60">
+        <button type="button" id="pasteBtn" class="ghost" title="Paste from clipboard">Paste</button>
+        <button type="submit" id="goBtn" class="go">Check it</button>
+      </form>
+      <p class="hint" id="hint">32 to 44 characters. Press <kbd>/</kbd> anytime to jump here.</p>
+      <div class="xray" id="xray" hidden>
+        <div class="xray-tiles" id="xrayTiles" aria-hidden="true"></div>
+        <p class="xray-counts" id="xrayCounts"></p>
+        <button type="button" class="link-btn" id="xrayWhyBtn" aria-expanded="false">Why no 0, O, I or l?</button>
+        <p class="xray-why" id="xrayWhy" hidden>Solana addresses are written in base58: every digit and letter except 0, O, I and l, because those four are too easy to mix up when you copy one by hand. The address is a 32 byte public key, which comes out as 32 to 44 of these characters.</p>
+      </div>
+      <button type="button" id="sampleBtn" class="link-btn">no wallet handy? try the sample one</button>
+
+      <section class="speedrun" aria-labelledby="speedTitle">
+        <div class="speed-head">
+          <h2 id="speedTitle">Solana speed run</h2>
+          <p class="speed-sub">Simulated. Solana makes a new block about every 0.4 seconds.</p>
+        </div>
+        <div class="conveyor" id="conveyor" aria-hidden="true"><div class="belt" id="belt"></div></div>
+        <div class="speed-foot">
+          <button type="button" class="go" id="sendTx">Send a test tx</button>
+          <p class="speed-stats" role="status" aria-live="polite">
+            <span><strong id="blockCount">0</strong> blocks since you opened this</span>
+            <span id="txResult">Tap the button and watch your tx land</span>
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="resultsView" class="view results-view" hidden>
+      <div class="verdict" id="verdict">
+        <div class="verdict-text">
+          <button type="button" class="wallet-chip" id="walletChip" title="Copy address"></button>
+          <button type="button" class="rank" id="rankBtn" aria-expanded="false">
+            <span class="rank-kicker">wallet rank</span>
+            <span class="rank-title" id="rankTitle"></span>
+          </button>
+          <p class="rank-why" id="rankWhy" hidden></p>
+          <p class="pnl-label">total PnL</p>
+          <p class="pnl" id="pnlValue">$0.00</p>
+          <p class="verdict-line" id="verdictLine"></p>
+          <p class="asof" id="asOf"></p>
+          <p class="asof slot-clock" id="slotClock"></p>
+        </div>
+          <div class="mini-row verdict-mascot">
+            <div class="bubble mini-bubble" id="miniBubble">yo</div>
+            <button class="mascot mini-mascot" id="miniMascot" type="button" aria-label="Poke the blob"></button>
+            <button class="clap-cat" id="clapCat" type="button" aria-label="Reaction meme, click it" hidden>
+              <img src="assets/clap-cat.gif" alt="A black cat standing up and clapping" width="165" height="216">
+            </button>
+          </div>
+        <div class="verdict-side">
+          <p class="stat"><span id="pfValue">$0</span> portfolio value</p>
+          <p class="stat"><span id="pfChange">0%</span> over <span id="pfDays">0</span> days</p>
+          <button type="button" class="ghost" id="newSearchBtn">Check another wallet</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="panel chart-panel" aria-labelledby="chartTitle">
+          <h2 id="chartTitle">Portfolio value</h2>
+          <div class="chart-box"><canvas id="pfChart" aria-label="Portfolio value over time" role="img"></canvas></div>
+        </section>
+
+        <section class="panel holdings-panel" aria-labelledby="holdTitle">
+          <div class="panel-head">
+            <h2 id="holdTitle">Holdings</h2>
+            <label class="sort-select">Sort by
+              <select id="holdSort">
+                <option value="value">value</option>
+                <option value="pnl">PnL</option>
+                <option value="symbol">name</option>
+              </select>
+            </label>
+          </div>
+          <ul class="holdings" id="holdings"></ul>
+        </section>
+      </div>
+
+      <section class="panel sol-lab" id="solLab" aria-labelledby="labTitle">
+        <div class="panel-head">
+          <h2 id="labTitle">What your SOL can do</h2>
+          <p class="lab-note">1 SOL is 1,000,000,000 lamports. A basic tx costs 5,000 lamports.</p>
+        </div>
+        <label class="lab-slider" for="solSlider">
+          <span>Drag to pick an amount of this wallet's SOL</span>
+          <input type="range" id="solSlider" min="0" max="1" step="0.01" value="1">
+        </label>
+        <div class="lab-out">
+          <p><strong id="labSol">0</strong> SOL</p>
+          <p><strong id="labLamports">0</strong> lamports</p>
+          <p><strong id="labUsd">$0</strong> right now</p>
+          <p class="lab-big"><strong id="labTx">0</strong> transactions worth of fees</p>
+        </div>
+        <p class="lab-quip" id="labQuip"></p>
+      </section>
+
+      <section class="panel history-panel" aria-labelledby="histTitle">
+        <div class="panel-head">
+          <h2 id="histTitle">History</h2>
+          <div class="filters" role="group" aria-label="Filter days">
+            <button type="button" data-filter="all" aria-pressed="true">All days</button>
+            <button type="button" data-filter="up" aria-pressed="false">Green days</button>
+            <button type="button" data-filter="down" aria-pressed="false">Red days</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="history">
+            <thead>
+              <tr>
+                <th><button type="button" data-sort="date">Date</button></th>
+                <th class="num"><button type="button" data-sort="value">Value</button></th>
+                <th class="num"><button type="button" data-sort="change">Change</button></th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+          <p class="empty" id="historyEmpty" hidden>No days match this filter. Try All days.</p>
+        </div>
+      </section>
+    </section>
+
+    <!-- LOADING / ERROR -->
+    <section id="loadingView" class="view loading-view" hidden>
+      <img class="loading-pic" src="assets/loading-dog.gif" alt="A dog dancing while the wallet loads" width="240" height="240">
+      <p id="loadingLine">hold up brother, reading the chain</p>
+    </section>
+  </main>
+
+  <template id="blobTpl"><svg viewBox="0 0 200 180" aria-hidden="true">
+            <defs>
+              <linearGradient id="blobGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" class="g1"/>
+                <stop offset="100%" class="g2"/>
+              </linearGradient>
+            </defs>
+            <path class="blob-body" fill="url(#blobGrad)" d="M100 12c46 0 84 30 84 78s-30 78-84 78-84-30-84-78 38-78 84-78z"/>
+            <g class="eyes">
+              <g class="eye" transform="translate(72 82)"><ellipse class="eye-white" rx="17" ry="19"/><circle class="pupil" r="8"/></g>
+              <g class="eye" transform="translate(128 82)"><ellipse class="eye-white" rx="17" ry="19"/><circle class="pupil" r="8"/></g>
+            </g>
+            <path class="mouth" d="M84 124 Q100 136 116 124" />
+            <path class="sweat" d="M160 52 q8 12 0 18 q-8 -6 0 -18z"/>
+            <g class="tears"><path d="M64 104 q-4 14 0 20"/><path d="M136 104 q4 14 0 20"/></g>
+          </svg></template>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
