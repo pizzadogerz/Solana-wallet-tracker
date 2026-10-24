@@ -202,6 +202,10 @@ const RANK_MEMES = {
     src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺",
     lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
   },
+  "Quiet Winner": {
+    src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
+    lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
+  },
 };
 let currentReaction = null;
 
@@ -479,7 +483,7 @@ function renderResults(data) {
   renderHoldings();
   renderHistory();
 
-  if (pnl > 0) burstConfetti();
+  if (pnl > 0 && getRank(data).title !== "Quiet Winner") burstConfetti(); // quiet winners stay quiet
 }
 
 // ---------- Wallet rank ----------
