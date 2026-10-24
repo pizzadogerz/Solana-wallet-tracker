@@ -47,7 +47,10 @@
         <button type="button" class="link-btn" id="xrayWhyBtn" aria-expanded="false">Why no 0, O, I or l?</button>
         <p class="xray-why" id="xrayWhy" hidden>Solana addresses are written in base58: every digit and letter except 0, O, I and l, because those four are too easy to mix up when you copy one by hand. The address is a 32 byte public key, which comes out as 32 to 44 of these characters.</p>
       </div>
-      <button type="button" id="sampleBtn" class="link-btn">no wallet handy? try the sample one</button>
+      <div class="demo-row" id="demoRow">
+        <p class="demo-label">No wallet handy? Try a demo one</p>
+        <div class="demo-chips" id="demoChips"></div>
+      </div>
 
       <section class="speedrun" aria-labelledby="speedTitle">
         <div class="speed-head">
@@ -92,6 +95,7 @@
           <p class="stat"><span id="pfValue">$0</span> portfolio value</p>
           <p class="stat"><span id="pfChange">0%</span> over <span id="pfDays">0</span> days</p>
           <button type="button" class="ghost" id="newSearchBtn">Check another wallet</button>
+          <button type="button" class="ghost" id="nextDemoBtn" hidden>Next demo wallet</button>
         </div>
       </div>
 

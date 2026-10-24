@@ -29,6 +29,46 @@ const MOCK_DATA = {
   ],
 };
 
+// ---------- Demo wallets (only used while API_BASE is empty) ----------
+// Each one is built to land on a different rank title, so you can test every reaction.
+const MINTS = {
+  SOL: "So11111111111111111111111111111111111111112",
+  USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  JUP: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  WIF: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+};
+const demoAddr = (name) => ("Demo" + name).padEnd(44, "1"); // fake but valid looking address
+const tok = (symbol, amount, avgCostUsd, currentPriceUsd) => ({
+  mint: MINTS[symbol], symbol, amount, avgCostUsd, currentPriceUsd,
+  unrealizedPnlUsd: +((currentPriceUsd - avgCostUsd) * amount).toFixed(2),
+});
+function demoHistory(endValue, weekPct) {
+  const start = endValue / (1 + weekPct / 100);
+  const shape = [0, 0.3, 0.15, 0.55, 0.8, 0.65, 1]; // same zigzag for every demo
+  return shape.map((t, i) => ({
+    date: new Date(Date.UTC(2026, 8, 18 + i)).toISOString().slice(0, 10),
+    portfolioValueUsd: +(start + (endValue - start) * t).toFixed(2),
+  }));
+}
+function demoWallet(name, holdings, weekPct) {
+  const value = holdings.reduce((s, h) => s + h.amount * h.currentPriceUsd, 0);
+  const pnl = holdings.reduce((s, h) => s + h.unrealizedPnlUsd, 0);
+  return {
+    wallet: demoAddr(name), asOf: MOCK_DATA.asOf, totalPnlUsd: +pnl.toFixed(2),
+    holdings, history: holdings.length ? demoHistory(value, weekPct) : [],
+  };
+}
+const DEMOS = [
+  { label: "SOL Maxi", data: MOCK_DATA },
+  { label: "W Collector", data: demoWallet("Winner", [tok("SOL", 20, 110, 162.8), tok("JUP", 1000, 0.5, 0.79)], 18) },
+  { label: "Bag Holder", data: demoWallet("BagHo1der", [tok("JUP", 3000, 1.4, 0.79), tok("WIF", 400, 3.2, 1.9)], -14) },
+  { label: "Stablecoin Andy", data: demoWallet("Stab1ecoinAndy", [tok("USDC", 4000, 1, 1), tok("SOL", 3, 150, 162.8)], 1.2) },
+  { label: "Quiet Winner", data: demoWallet("QuietWinner", [tok("SOL", 5, 155, 162.8), tok("JUP", 1500, 0.7, 0.79), tok("USDC", 900, 1, 1)], 4) },
+  { label: "Down Bad", data: demoWallet("DownBad", [tok("SOL", 6, 175, 162.8), tok("JUP", 1200, 0.9, 0.79), tok("USDC", 600, 1, 1)], -6) },
+  { label: "Balanced", data: demoWallet("Ba1anced", [tok("SOL", 4, 162.8, 162.8), tok("JUP", 1000, 0.79, 0.79), tok("USDC", 500, 1, 1)], 0) },
+  { label: "Empty", data: demoWallet("EmptyPockets", [], 0) },
+];
+
 // ---------- Meme lines (swap these for your own anytime) ----------
 const LINES = {
   idle: ["drop a wallet, gng", "i'm just a dog, brother", "paste it, i don't bite", "who we stalking today gng"],
@@ -151,6 +191,9 @@ const REACTIONS = {
     lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
   },
 };
+// Optional meme per rank title. Beats the W / flat / L reaction when set. Example:
+// "Stablecoin Andy": { src: "assets/andy.gif", alt: "...", bubble: "...", lines: ["..."] },
+const RANK_MEMES = {};
 let currentReaction = null;
 
 // clapping cat (or other reaction): click it for more
@@ -277,11 +320,29 @@ $("pasteBtn").addEventListener("click", async () => {
     say("your browser blocked paste, use Ctrl+V gng");
   }
 });
-$("sampleBtn").addEventListener("click", () => {
-  els.input.value = SAMPLE_WALLET;
+// Demo chips under the search bar (hidden once the real API is plugged in)
+let demoIndex = 0;
+function loadDemo(i) {
+  demoIndex = (i + DEMOS.length) % DEMOS.length;
+  const addr = DEMOS[demoIndex].data.wallet;
+  els.input.value = addr;
   updateValidation();
-  runSearch(SAMPLE_WALLET);
-});
+  runSearch(addr);
+}
+if (API_BASE) {
+  $("demoRow").hidden = true;
+} else {
+  DEMOS.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = d.label;
+    if (i === 0) b.id = "sampleBtn";
+    b.addEventListener("click", () => loadDemo(i));
+    $("demoChips").appendChild(b);
+  });
+  $("nextDemoBtn").hidden = false;
+  $("nextDemoBtn").addEventListener("click", () => loadDemo(demoIndex + 1));
+}
 
 // Keyboard: "/" jumps to search, Escape goes back
 document.addEventListener("keydown", (e) => {
@@ -317,7 +378,9 @@ function showView(name) {
 async function fetchWallet(address) {
   if (!API_BASE) {
     await new Promise((r) => setTimeout(r, 1400)); // fake network delay so you can see the loader
-    return { ...MOCK_DATA, wallet: address };
+    const demo = DEMOS.find((d) => d.data.wallet === address);
+    if (demo) demoIndex = DEMOS.indexOf(demo);
+    return structuredClone(demo ? demo.data : { ...MOCK_DATA, wallet: address });
   }
   const res = await fetch(`${API_BASE}/wallet/${encodeURIComponent(address)}`);
   const body = await res.json().catch(() => ({}));
@@ -373,7 +436,8 @@ function renderResults(data) {
   $("verdictLine").textContent = pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat);
   // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
   // No L pic yet, so red wallets get the crying blob.
-  currentReaction = pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat;
+  currentReaction = RANK_MEMES[getRank(data).title]
+    || (pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat);
   clapCat.hidden = !currentReaction;
   miniMascot.hidden = !!currentReaction;
   if (currentReaction) {
@@ -387,7 +451,8 @@ function renderResults(data) {
     setMood("sad", miniMascot);
     miniBubble.textContent = "pain.";
   }
-  $("asOf").textContent = data.asOf ? "Updated " + new Date(data.asOf).toLocaleString() : "";
+  $("asOf").textContent = (data.asOf ? "Updated " + new Date(data.asOf).toLocaleString() : "")
+    + (API_BASE ? "" : ". Demo data, not live from the chain.");
   startSlotClock(data.asOf);
 
   const first = history[0]?.portfolioValueUsd || 0;
@@ -681,6 +746,9 @@ function renderHistory() {
       <td class="num">${usd(r.value)}</td>
       <td class="num ${r.first ? "" : tone(r.change)}">${r.first ? "first day" : signedUsd(r.change)}</td>
     </tr>`).join("");
+  els.historyEmpty.textContent = (currentData.history || []).length
+    ? "No days match this filter. Try All days."
+    : "No history yet for this wallet.";
   els.historyEmpty.hidden = rows.length > 0;
 }
 
