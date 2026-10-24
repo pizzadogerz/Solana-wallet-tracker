@@ -469,3 +469,6 @@ table.history { width: 100%; border-collapse: collapse; font-size: .95rem; }
   transition: border-color .15s, transform .15s;
 }
 .demo-chips button:hover { border-color: var(--a2); transform: translateY(-1px); }
+
+.clap-cat.is-l { box-shadow: 0 0 0 4px var(--down); transform: rotate(-4deg); }
+.clap-cat.is-rank { box-shadow: 0 0 0 4px var(--a1), 0 0 0 8px var(--a2); }

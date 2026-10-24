@@ -186,6 +186,10 @@ const REACTIONS = {
     src: "assets/clap-cat.gif", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏",
     lines: ["the cat approves gng", "standing ovation brother", "even the cat is proud of you", "W W W W"],
   },
+  l: {
+    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", bubble: "it's joever brother",
+    lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
+  },
   flat: {
     src: "assets/flat-cat.gif", alt: "A cat dancing, unbothered", bubble: "unbothered. moisturized.",
     lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
@@ -193,7 +197,12 @@ const REACTIONS = {
 };
 // Optional meme per rank title. Beats the W / flat / L reaction when set. Example:
 // "Stablecoin Andy": { src: "assets/andy.gif", alt: "...", bubble: "...", lines: ["..."] },
-const RANK_MEMES = {};
+const RANK_MEMES = {
+  "Certified W Collector": {
+    src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺",
+    lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
+  },
+};
 let currentReaction = null;
 
 // clapping cat (or other reaction): click it for more
@@ -208,7 +217,7 @@ clapCat.addEventListener("click", () => {
   restartGif();
   if (!currentReaction) return;
   say(pick(currentReaction.lines), miniBubble);
-  if (currentReaction === REACTIONS.w) burstConfetti();
+  if (currentReaction === REACTIONS.w || currentReaction === RANK_MEMES["Certified W Collector"]) burstConfetti();
 });
 
 let pokeCount = 0;
@@ -435,7 +444,6 @@ function renderResults(data) {
   countUp(pnlEl, pnl);
   $("verdictLine").textContent = pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat);
   // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
-  // No L pic yet, so red wallets get the crying blob.
   currentReaction = RANK_MEMES[getRank(data).title]
     || (pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat);
   clapCat.hidden = !currentReaction;
@@ -445,6 +453,8 @@ function renderResults(data) {
     img.src = currentReaction.src;
     img.alt = currentReaction.alt;
     clapCat.classList.toggle("is-flat", currentReaction === REACTIONS.flat);
+    clapCat.classList.toggle("is-l", currentReaction === REACTIONS.l);
+    clapCat.classList.toggle("is-rank", Object.values(RANK_MEMES).includes(currentReaction));
     restartGif();
     miniBubble.textContent = currentReaction.bubble;
   } else {
