@@ -196,7 +196,7 @@ const REACTIONS = {
   },
 };
 // Optional meme per rank title. Beats the W / flat / L reaction when set. Example:
-// "Stablecoin Andy": { src: "assets/andy.gif", alt: "...", bubble: "...", lines: ["..."] },
+// "Some Title": { src: "assets/pic.webp", alt: "...", bubble: "...", lines: ["..."] },
 const RANK_MEMES = {
   "Certified W Collector": {
     src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺",
@@ -205,6 +205,14 @@ const RANK_MEMES = {
   "Quiet Winner": {
     src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
     lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
+  },
+  "Stablecoin Andy": {
+    src: "assets/andy-cat.svg", alt: "A cat napping on a dollar coin under a striped blanket", bubble: "do not disturb, earning 0%",
+    lines: ["volatility? not in this house", "andy sleeps well at night gng", "safe, boring, undefeated", "wake me up when it's a bull run"],
+  },
+  "Empty Pockets": {
+    src: "assets/empty-dog.svg", alt: "A confused dog tilting its head next to an empty wallet with a moth flying out", bubble: "where the coins at brother?",
+    lines: ["just a moth in here gng", "the wallet is giving air", "bro checked the wrong wallet?", "zero tokens, full confusion"],
   },
   // "Maxi" covers every coin: SOL Maxi, JUP Maxi, and so on
   Maxi: {
@@ -453,7 +461,9 @@ function renderResults(data) {
   const pnlEl = $("pnlValue");
   pnlEl.className = "pnl " + tone(pnl);
   countUp(pnlEl, pnl);
-  $("verdictLine").textContent = pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat);
+  $("verdictLine").textContent = holdings.length
+    ? pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat)
+    : pick(["no bags to check, brother", "this wallet is giving air gng", "fresh wallet, who dis"]);
   // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
   currentReaction = rankMeme(getRank(data).title)
     || (pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat);
@@ -494,7 +504,8 @@ function renderResults(data) {
   renderHoldings();
   renderHistory();
 
-  if (pnl > 0 && getRank(data).title !== "Quiet Winner") burstConfetti(); // quiet winners stay quiet
+  // no confetti for the calm ones: quiet winners stay quiet, and Andy is napping
+  if (pnl > 0 && !["Quiet Winner", "Stablecoin Andy"].includes(getRank(data).title)) burstConfetti();
 }
 
 // ---------- Wallet rank ----------

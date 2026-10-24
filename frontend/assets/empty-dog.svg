@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" width="220" height="220">
+  <style>
+    .head { transform-origin: 112px 168px; animation: tilt 2.4s ease-in-out infinite; }
+    @keyframes tilt { 0%, 100% { transform: rotate(-13deg); } 50% { transform: rotate(13deg); } }
+    .q { font: 900 46px "Arial Black", Arial, sans-serif; fill: #14f195; stroke: #2b2440; stroke-width: 5px; paint-order: stroke;
+         transform-origin: 182px 46px; animation: pop 2.4s ease-in-out infinite; }
+    @keyframes pop { 0%, 100% { transform: scale(.85) rotate(-10deg); } 50% { transform: scale(1.1) rotate(10deg); } }
+    .moth { animation: fly 3.2s ease-in-out infinite; }
+    @keyframes fly { 0% { transform: translate(0, 6px); } 50% { transform: translate(-6px, -26px); } 100% { transform: translate(0, 6px); } }
+    .wing { transform-box: fill-box; transform-origin: center bottom; animation: flap .22s linear infinite alternate; }
+    @keyframes flap { to { transform: scaleY(.35); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+
+  <!-- empty wallet, open, with the pocket lining hanging out -->
+  <g>
+    <rect x="18" y="168" width="78" height="44" rx="8" fill="#5b3fc4"/>
+    <path d="M18 176 L 96 176 L 90 162 L 24 162 Z" fill="#7a5be0"/>
+    <path d="M44 190 q 6 18 16 0 Z" fill="#f4f0ff" stroke="#2b2440" stroke-width="2"/>
+    <circle cx="84" cy="194" r="4" fill="#14f195"/>
+  </g>
+
+  <!-- confused dog -->
+  <g class="head">
+    <path d="M70 70 C 44 74, 36 126, 56 150 C 68 142, 76 108, 84 86 Z" fill="#8a5a36"/>
+    <path d="M154 70 C 180 74, 188 126, 168 150 C 156 142, 148 108, 140 86 Z" fill="#8a5a36"/>
+    <ellipse cx="112" cy="106" rx="52" ry="50" fill="#d9a066"/>
+    <path d="M86 70 C 98 60, 126 60, 138 70 C 128 66, 96 66, 86 70 Z" fill="#c48a52"/>
+    <ellipse cx="112" cy="132" rx="30" ry="22" fill="#f1d3ae"/>
+    <ellipse cx="112" cy="121" rx="11" ry="8" fill="#2b2440"/>
+    <ellipse cx="108" cy="118" rx="3" ry="2" fill="#ffffff" opacity=".7"/>
+    <path d="M100 140 q 12 7 24 0" stroke="#2b2440" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- one eyebrow up, one flat: classic confused face -->
+    <path d="M78 84 q 10 -12 22 -4" stroke="#6e4426" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M124 88 q 11 -2 22 2" stroke="#6e4426" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="90" cy="100" r="8" fill="#2b2440"/>
+    <circle cx="134" cy="100" r="8" fill="#2b2440"/>
+    <circle cx="92.5" cy="97" r="2.6" fill="#ffffff"/>
+    <circle cx="136.5" cy="97" r="2.6" fill="#ffffff"/>
+    <rect x="96" y="150" width="32" height="12" rx="6" fill="#14f195"/>
+  </g>
+
+  <!-- moth escaping the wallet -->
+  <g class="moth">
+    <g transform="translate(30 160)">
+      <ellipse class="wing" cx="-7" cy="-2" rx="8" ry="6" fill="#d8d2e6" stroke="#2b2440" stroke-width="1.5"/>
+      <ellipse class="wing" cx="7" cy="-2" rx="8" ry="6" fill="#d8d2e6" stroke="#2b2440" stroke-width="1.5"/>
+      <ellipse cx="0" cy="2" rx="3" ry="7" fill="#6b6380"/>
+    </g>
+  </g>
+
+  <text class="q" x="164" y="62">?</text>
+</svg>

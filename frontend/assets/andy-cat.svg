@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 44 200 144" width="200" height="144">
+  <style>
+    .breathe { transform-origin: 120px 172px; animation: breathe 3s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scale(1.03, .96); } }
+    .tail { transform-origin: 186px 160px; animation: tail 3s ease-in-out infinite; }
+    @keyframes tail { 50% { transform: rotate(8deg); } }
+    .z { font: 800 24px "Arial Rounded MT Bold", Arial, sans-serif; fill: #ffffff; stroke: #2b2440; stroke-width: 4px;
+         paint-order: stroke; opacity: 0; animation: float 3s linear infinite; }
+    .z2 { font-size: 18px; animation-delay: 1s; }
+    .z3 { font-size: 14px; animation-delay: 2s; }
+    @keyframes float {
+      0% { opacity: 0; transform: translate(0, 0); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(22px, -50px); }
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } .z { opacity: 1; } }
+  </style>
+
+  <!-- USDC style coin used as a pillow -->
+  <ellipse cx="66" cy="168" rx="46" ry="15" fill="#1b5aa0"/>
+  <ellipse cx="66" cy="161" rx="46" ry="15" fill="#2775ca"/>
+  <ellipse cx="66" cy="161" rx="34" ry="10" fill="none" stroke="#9cc4f0" stroke-width="2"/>
+  <text x="66" y="167" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="16" fill="#ffffff">$</text>
+
+  <g class="breathe">
+    <!-- tail peeking out of the blanket -->
+    <path class="tail" d="M184 162 C 204 160, 210 136, 196 126 C 190 122, 186 128, 192 132 C 200 140, 194 152, 182 152 Z" fill="#9c95b3"/>
+
+    <!-- body -->
+    <path d="M70 168 C 64 124, 100 104, 140 108 C 182 112, 196 142, 188 170 Z" fill="#a9a2bd"/>
+
+    <!-- head resting on the coin -->
+    <path d="M40 126 L 46 92 L 68 116 Z" fill="#a9a2bd"/>
+    <path d="M44 120 L 48 100 L 61 115 Z" fill="#e7a3b8"/>
+    <path d="M88 116 L 104 88 L 110 124 Z" fill="#a9a2bd"/>
+    <path d="M93 116 L 103 98 L 106 120 Z" fill="#e7a3b8"/>
+    <ellipse cx="76" cy="134" rx="40" ry="30" fill="#bdb6d0"/>
+
+    <!-- closed sleepy eyes -->
+    <path d="M54 132 q 9 8 18 0" stroke="#2b2440" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M82 132 q 9 8 18 0" stroke="#2b2440" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="54" cy="146" rx="7" ry="4" fill="#e7a3b8" opacity=".6"/>
+    <ellipse cx="100" cy="146" rx="7" ry="4" fill="#e7a3b8" opacity=".6"/>
+    <path d="M73 142 h 7 l -3.5 4 Z" fill="#e7849f"/>
+    <path d="M70 150 q 3.5 3 6.5 0 q 3 3 6.5 0" stroke="#2b2440" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- cozy blanket in mint stripes -->
+    <path d="M104 128 C 134 116, 178 120, 194 142 L 194 174 L 96 174 C 92 156, 94 138, 104 128 Z" fill="#12c486"/>
+    <path d="M118 124 C 116 140, 116 158, 118 174" stroke="#7af0c0" stroke-width="7" fill="none"/>
+    <path d="M146 120 C 144 138, 144 158, 146 174" stroke="#7af0c0" stroke-width="7" fill="none"/>
+    <path d="M172 128 C 170 144, 170 160, 172 174" stroke="#7af0c0" stroke-width="7" fill="none"/>
+    <path d="M104 128 C 134 116, 178 120, 194 142" stroke="#0e9466" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- floating Z's -->
+  <text class="z" x="112" y="92">Z</text>
+  <text class="z z2" x="126" y="80">z</text>
+  <text class="z z3" x="138" y="70">z</text>
+</svg>
