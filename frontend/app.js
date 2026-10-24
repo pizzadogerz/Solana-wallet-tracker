@@ -192,10 +192,6 @@ const MEMES = {
     src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺", confetti: true,
     lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
   },
-  pointDog: {
-    src: "assets/w-point-dog.webp", soft: true, alt: "A dog standing up and pointing at the sky", bubble: "number go up ☝️", confetti: true,
-    lines: ["up only brother", "to the moon, and he's pointing at it", "chart said ☝️ so dog said ☝️", "bro called the top. it kept going."],
-  },
   quietCat: {
     src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
     lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
@@ -253,7 +249,7 @@ const MEMES = {
 // Memes per rank title. When a title has more than one, a random one shows
 // and clicking it swaps to the next. "Maxi" covers SOL Maxi, JUP Maxi, and so on.
 const RANK_MEMES = {
-  "Certified W Collector": [MEMES.pointDog, MEMES.goldenDog],
+  "Certified W Collector": [MEMES.clapCat, MEMES.goldenDog],
   "Quiet Winner": [MEMES.quietCat],
   "Stablecoin Andy": [MEMES.andyDog, MEMES.carDog],
   Maxi: [MEMES.maxiKitten],
