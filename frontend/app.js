@@ -180,63 +180,117 @@ miniMascot.addEventListener("click", () => {
   say(pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.poke), miniBubble);
 });
 
-// Reaction memes on the results card. Add an "l" entry here when you have an L pic.
-const REACTIONS = {
-  w: {
-    src: "assets/clap-cat.webp", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏",
+// ---------- Reaction memes on the results card ----------
+// Each meme: src, alt, bubble (what it says first), lines (what it says when clicked).
+// soft: edges faded instead of cut out, so no glow. credit: shown under it. confetti: on click.
+const MEMES = {
+  clapCat: {
+    src: "assets/clap-cat.webp", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏", confetti: true,
     lines: ["the cat approves gng", "standing ovation brother", "even the cat is proud of you", "W W W W"],
   },
-  l: {
-    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", soft: true, bubble: "it's joever brother",
-    lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
-  },
-  flat: {
-    src: "assets/flat-cat.gif", alt: "A cat dancing, unbothered", bubble: "unbothered. moisturized.",
-    lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
-  },
-};
-// Optional meme per rank title. Beats the W / flat / L reaction when set. Example:
-// "Some Title": { src: "assets/pic.webp", alt: "...", bubble: "...", lines: ["..."] },
-const RANK_MEMES = {
-  "Certified W Collector": {
-    src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺",
+  goldenDog: {
+    src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺", confetti: true,
     lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
   },
-  "Quiet Winner": {
+  pointDog: {
+    src: "assets/w-point-dog.webp", alt: "A dog standing up and pointing at the sky", soft: true, bubble: "number go up ☝️", confetti: true,
+    lines: ["up only brother", "to the moon, and he's pointing at it", "chart said ☝️ so dog said ☝️", "bro called the top. it kept going."],
+  },
+  quietCat: {
     src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
     lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
   },
-  "Stablecoin Andy": {
+  andyDog: {
+    src: "assets/andy-dog.webp", alt: "A dog lying on its back, lazily clapping", bubble: "safe and comfy gng",
+    lines: ["lying down, still winning", "0% stress, 100% USDC", "polite clap for my stablecoins", "andy doesn't get up for less than 1%"],
+  },
+  andyCat: {
     src: "assets/andy-cat.svg", alt: "A cat napping on a dollar coin under a striped blanket", bubble: "do not disturb, earning 0%",
     lines: ["volatility? not in this house", "andy sleeps well at night gng", "safe, boring, undefeated", "wake me up when it's a bull run"],
   },
-  "Empty Pockets": {
-    src: "assets/empty-dog.svg", alt: "A confused dog tilting its head next to an empty wallet with a moth flying out", bubble: "where the coins at brother?",
-    lines: ["just a moth in here gng", "the wallet is giving air", "bro checked the wrong wallet?", "zero tokens, full confusion"],
-  },
-  // "Maxi" covers every coin: SOL Maxi, JUP Maxi, and so on
-  Maxi: {
+  maxiKitten: {
     src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", soft: true, credit: "clip by @akash_sidhu_123", bubble: "say one bad word about my coin",
     lines: ["one coin, and it will fight you for it", "diversify? never heard of her", "tiny wallet, big loyalty gng", "come at my bag brother"],
   },
+  earsMonkey: {
+    src: "assets/ears-monkey.webp", alt: "A little monkey covering its ears", bubble: "la la la can't hear the losses",
+    lines: ["don't tell me the price brother", "if i don't look, it's not real", "selective hearing, diamond hands", "nope. not listening. holding."],
+  },
+  cookedDog: {
+    src: "assets/cooked-dog.webp", alt: "A dachshund looking down, then up nervously", bubble: "am i cooked?",
+    lines: ["lowkey yes brother", "slightly cooked, still edible", "it's giving medium rare gng", "look at me. you're fine. maybe."],
+  },
+  dazedCat: {
+    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", soft: true, bubble: "it's joever brother",
+    lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
+  },
+  thinkCat: {
+    src: "assets/think-cat.webp", alt: "A cat with its paw on its chin, thinking", soft: true, bubble: "buy? sell? ...nah",
+    lines: ["perfectly balanced, deeply thinking", "zero PnL needs zero decisions", "the cat is calculating gng", "hmm. hmm. still zero."],
+  },
+  danceCat: {
+    src: "assets/flat-cat.gif", alt: "A cat dancing, unbothered", bubble: "unbothered. moisturized.",
+    lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
+  },
+  thinkMonkey: {
+    src: "assets/think-monkey.webp", alt: "A monkey rubbing its chin, deep in thought", bubble: "hmm, where did my coins go",
+    lines: ["let me think... nope, still empty", "big brain, empty wallet", "thinking about buying something gng", "the wallet is a mystery brother"],
+  },
+  emptyDog: {
+    src: "assets/empty-dog.svg", alt: "A confused dog tilting its head next to an empty wallet with a moth flying out", bubble: "where the coins at brother?",
+    lines: ["just a moth in here gng", "the wallet is giving air", "bro checked the wrong wallet?", "zero tokens, full confusion"],
+  },
 };
-// finds the meme for a rank title (any "... Maxi" title uses the Maxi one)
-const rankMeme = (title) => RANK_MEMES[title] || (title.endsWith(" Maxi") ? RANK_MEMES.Maxi : undefined);
-let currentReaction = null;
 
-// clapping cat (or other reaction): click it for more
+// Memes per rank title. When a title has more than one, a random one shows
+// and clicking it swaps to the next. "Maxi" covers SOL Maxi, JUP Maxi, and so on.
+const RANK_MEMES = {
+  "Certified W Collector": [MEMES.pointDog, MEMES.goldenDog],
+  "Quiet Winner": [MEMES.quietCat],
+  "Stablecoin Andy": [MEMES.andyDog, MEMES.andyCat],
+  Maxi: [MEMES.maxiKitten],
+  "Professional Bag Holder": [MEMES.earsMonkey, MEMES.dazedCat],
+  "Down Bad": [MEMES.cookedDog, MEMES.dazedCat],
+  "Perfectly Balanced": [MEMES.thinkCat, MEMES.danceCat],
+  "Empty Pockets": [MEMES.thinkMonkey, MEMES.emptyDog],
+};
+const memesFor = (title, pnl) =>
+  RANK_MEMES[title] || (title.endsWith(" Maxi") ? RANK_MEMES.Maxi : null)
+  || (pnl > 0 ? [MEMES.clapCat] : pnl < 0 ? [MEMES.dazedCat] : [MEMES.danceCat]);
+let memeSet = [];
+let memeIndex = 0;
+let memeTone = "flat";
+
 const clapCat = $("clapCat");
 function restartGif() {
   const img = clapCat.querySelector("img");
   const src = img.getAttribute("src").split("?")[0];
   img.src = src + "?t=" + Date.now(); // makes the gif play from the start
 }
+function showMeme(i, talk) {
+  memeIndex = i % memeSet.length;
+  const m = memeSet[memeIndex];
+  const img = clapCat.querySelector("img");
+  img.src = m.src;
+  img.alt = m.alt;
+  restartGif();
+  clapCat.classList.toggle("is-soft", !!m.soft); // faded edges, no glow needed
+  clapCat.classList.toggle("is-rank", memeTone === "up");
+  clapCat.classList.toggle("is-l", memeTone === "down");
+  $("memeCredit").textContent = m.credit || "";
+  $("memeCredit").hidden = !m.credit;
+  if (talk) say(pick(m.lines), miniBubble);
+  else miniBubble.textContent = m.bubble;
+}
 clapCat.addEventListener("click", () => {
   squish(clapCat);
-  restartGif();
-  if (!currentReaction) return;
-  say(pick(currentReaction.lines), miniBubble);
-  if (currentReaction === REACTIONS.w || currentReaction === RANK_MEMES["Certified W Collector"]) burstConfetti();
+  if (memeSet.length > 1) {
+    showMeme(memeIndex + 1, true); // swap to the next meme for this title
+  } else {
+    restartGif();
+    say(pick(memeSet[memeIndex].lines), miniBubble);
+  }
+  if (memeSet[memeIndex].confetti) burstConfetti();
 });
 
 let pokeCount = 0;
@@ -464,28 +518,12 @@ function renderResults(data) {
   $("verdictLine").textContent = holdings.length
     ? pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat)
     : pick(["no bags to check, brother", "this wallet is giving air gng", "fresh wallet, who dis"]);
-  // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
-  currentReaction = rankMeme(getRank(data).title)
-    || (pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat);
-  clapCat.hidden = !currentReaction;
-  miniMascot.hidden = !!currentReaction;
-  if (currentReaction) {
-    const img = clapCat.querySelector("img");
-    img.src = currentReaction.src;
-    img.alt = currentReaction.alt;
-    clapCat.classList.toggle("is-flat", currentReaction === REACTIONS.flat);
-    clapCat.classList.toggle("is-l", currentReaction === REACTIONS.l);
-    clapCat.classList.toggle("is-rank", Object.values(RANK_MEMES).includes(currentReaction));
-    restartGif();
-    miniBubble.textContent = currentReaction.bubble;
-    clapCat.classList.toggle("is-soft", !!currentReaction.soft); // faded edges, no glow needed
-    $("memeCredit").textContent = currentReaction.credit || "";
-    $("memeCredit").hidden = !currentReaction.credit;
-  } else {
-    $("memeCredit").hidden = true;
-    setMood("sad", miniMascot);
-    miniBubble.textContent = "pain.";
-  }
+  // Pick the reaction meme for this wallet's rank (random one if the title has several)
+  memeSet = memesFor(getRank(data).title, pnl);
+  memeTone = pnl > 0 ? "up" : pnl < 0 ? "down" : "flat";
+  clapCat.hidden = false;
+  miniMascot.hidden = true;
+  showMeme(Math.floor(Math.random() * memeSet.length), false);
   $("asOf").textContent = (data.asOf ? "Updated " + new Date(data.asOf).toLocaleString() : "")
     + (API_BASE ? "" : ". Demo data, not live from the chain.");
   startSlotClock(data.asOf);
