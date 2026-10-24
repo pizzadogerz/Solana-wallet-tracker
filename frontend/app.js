@@ -29,6 +29,46 @@ const MOCK_DATA = {
   ],
 };
 
+// ---------- Demo wallets (only used while API_BASE is empty) ----------
+// Each one is built to land on a different rank title, so you can test every reaction.
+const MINTS = {
+  SOL: "So11111111111111111111111111111111111111112",
+  USDC: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  JUP: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  WIF: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+};
+const demoAddr = (name) => ("Demo" + name).padEnd(44, "1"); // fake but valid looking address
+const tok = (symbol, amount, avgCostUsd, currentPriceUsd) => ({
+  mint: MINTS[symbol], symbol, amount, avgCostUsd, currentPriceUsd,
+  unrealizedPnlUsd: +((currentPriceUsd - avgCostUsd) * amount).toFixed(2),
+});
+function demoHistory(endValue, weekPct) {
+  const start = endValue / (1 + weekPct / 100);
+  const shape = [0, 0.3, 0.15, 0.55, 0.8, 0.65, 1]; // same zigzag for every demo
+  return shape.map((t, i) => ({
+    date: new Date(Date.UTC(2026, 8, 18 + i)).toISOString().slice(0, 10),
+    portfolioValueUsd: +(start + (endValue - start) * t).toFixed(2),
+  }));
+}
+function demoWallet(name, holdings, weekPct) {
+  const value = holdings.reduce((s, h) => s + h.amount * h.currentPriceUsd, 0);
+  const pnl = holdings.reduce((s, h) => s + h.unrealizedPnlUsd, 0);
+  return {
+    wallet: demoAddr(name), asOf: MOCK_DATA.asOf, totalPnlUsd: +pnl.toFixed(2),
+    holdings, history: holdings.length ? demoHistory(value, weekPct) : [],
+  };
+}
+const DEMOS = [
+  { label: "SOL Maxi", data: MOCK_DATA },
+  { label: "W Collector", data: demoWallet("Winner", [tok("SOL", 20, 110, 162.8), tok("JUP", 1000, 0.5, 0.79)], 18) },
+  { label: "Bag Holder", data: demoWallet("BagHo1der", [tok("JUP", 3000, 1.4, 0.79), tok("WIF", 400, 3.2, 1.9)], -14) },
+  { label: "Stablecoin Andy", data: demoWallet("Stab1ecoinAndy", [tok("USDC", 4000, 1, 1), tok("SOL", 3, 150, 162.8)], 1.2) },
+  { label: "Quiet Winner", data: demoWallet("QuietWinner", [tok("SOL", 5, 155, 162.8), tok("JUP", 1500, 0.7, 0.79), tok("USDC", 900, 1, 1)], 4) },
+  { label: "Down Bad", data: demoWallet("DownBad", [tok("SOL", 6, 175, 162.8), tok("JUP", 1200, 0.9, 0.79), tok("USDC", 600, 1, 1)], -6) },
+  { label: "Balanced", data: demoWallet("Ba1anced", [tok("SOL", 4, 162.8, 162.8), tok("JUP", 1000, 0.79, 0.79), tok("USDC", 500, 1, 1)], 0) },
+  { label: "Empty", data: demoWallet("EmptyPockets", [], 0) },
+];
+
 // ---------- Meme lines (swap these for your own anytime) ----------
 const LINES = {
   idle: ["drop a wallet, gng", "i'm just a dog, brother", "paste it, i don't bite", "who we stalking today gng"],
@@ -140,32 +180,121 @@ miniMascot.addEventListener("click", () => {
   say(pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.poke), miniBubble);
 });
 
-// Reaction memes on the results card. Add an "l" entry here when you have an L pic.
-const REACTIONS = {
-  w: {
-    src: "assets/clap-cat.gif", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏",
+// ---------- Reaction memes on the results card ----------
+// Each meme: src, alt, bubble (what it says first), lines (what it says when clicked).
+// soft: edges faded instead of cut out, so no glow. credit: shown under it. confetti: on click.
+const MEMES = {
+  clapCat: {
+    src: "assets/clap-cat.webp", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏", confetti: true,
     lines: ["the cat approves gng", "standing ovation brother", "even the cat is proud of you", "W W W W"],
   },
-  flat: {
+  goldenDog: {
+    src: "assets/w-dog.webp", alt: "A golden retriever standing up and doing a victory dance", bubble: "victory dance gng 🕺", confetti: true,
+    lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
+  },
+  quietCat: {
+    src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
+    lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
+  },
+  andyDog: {
+    src: "assets/andy-dog.webp", alt: "A dog lying on its back, lazily clapping", bubble: "safe and comfy gng",
+    lines: ["lying down, still winning", "0% stress, 100% USDC", "polite clap for my stablecoins", "andy doesn't get up for less than 1%"],
+  },
+  maxiKitten: {
+    src: "assets/maxi-kitten.webp", soft: true, alt: "A tiny kitten throwing punches", bubble: "say one bad word about my coin",
+    lines: ["one coin, and it will fight you for it", "diversify? never heard of her", "tiny wallet, big loyalty gng", "come at my bag brother"],
+  },
+  earsMonkey: {
+    src: "assets/ears-monkey.webp", soft: true, alt: "A little monkey covering its ears", bubble: "la la la can't hear the losses",
+    lines: ["don't tell me the price brother", "if i don't look, it's not real", "selective hearing, diamond hands", "nope. not listening. holding."],
+  },
+  cookedDog: {
+    src: "assets/cooked-dog.webp", soft: true, alt: "A dachshund looking down, then up nervously", bubble: "am i cooked?",
+    lines: ["lowkey yes brother", "slightly cooked, still edible", "it's giving medium rare gng", "look at me. you're fine. maybe."],
+  },
+  dazedCat: {
+    src: "assets/l-cat.webp", soft: true, alt: "A dazed cat staring into the camera", bubble: "it's joever brother",
+    lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
+  },
+  thinkCat: {
+    src: "assets/think-cat.webp", soft: true, alt: "A cat with its paw on its chin, thinking", bubble: "buy? sell? ...nah",
+    lines: ["perfectly balanced, deeply thinking", "zero PnL needs zero decisions", "the cat is calculating gng", "hmm. hmm. still zero."],
+  },
+  danceCat: {
     src: "assets/flat-cat.gif", alt: "A cat dancing, unbothered", bubble: "unbothered. moisturized.",
     lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
   },
+  standDog: {
+    src: "assets/stand-dog.webp", soft: true, alt: "A chihuahua standing up on its back legs, perfectly still", bubble: "zero PnL, full vibes gng",
+    lines: ["perfectly balanced, perfectly still", "not up, not down, just standing here", "holding the line at exactly zero", "no moves, no losses brother"],
+  },
+  carDog: {
+    src: "assets/car-dog.webp", soft: true, alt: "A chihuahua sitting calmly in a car", bubble: "wake me up when it's a bull run",
+    lines: ["just cruising on stablecoins gng", "scenic drive, zero volatility", "seatbelt on, risk off", "are we there yet? (no, still 0%)"],
+  },
+  helloDog: {
+    src: "assets/hello-dog.webp", soft: true, alt: "A golden retriever leaning into the camera like ummm hello", bubble: "ummm hellooo? where's the money",
+    lines: ["the wallet is giving air", "knock knock, anybody home?", "bro there's nothing in here", "hellooo? any tokens??"],
+  },
+  cryingPug: {
+    src: "assets/crying-pug.webp", alt: "A pug crying while staring at a phone", bubble: "unrealized loss, realized pain",
+    lines: ["he checked the chart again", "stop refreshing brother", "it's fine, they're just tears", "the phone said red. the pug said 😢"],
+  },
+  thinkMonkey: {
+    src: "assets/think-monkey.webp", alt: "A monkey rubbing its chin, deep in thought", bubble: "hmm, where did my coins go",
+    lines: ["let me think... nope, still empty", "big brain, empty wallet", "thinking about buying something gng", "the wallet is a mystery brother"],
+  },
 };
-let currentReaction = null;
 
-// clapping cat (or other reaction): click it for more
+// Memes per rank title. When a title has more than one, a random one shows
+// and clicking it swaps to the next. "Maxi" covers SOL Maxi, JUP Maxi, and so on.
+const RANK_MEMES = {
+  "Certified W Collector": [MEMES.clapCat, MEMES.goldenDog],
+  "Quiet Winner": [MEMES.quietCat],
+  "Stablecoin Andy": [MEMES.andyDog, MEMES.carDog],
+  Maxi: [MEMES.maxiKitten],
+  "Professional Bag Holder": [MEMES.earsMonkey, MEMES.cryingPug],
+  "Down Bad": [MEMES.cookedDog, MEMES.dazedCat],
+  "Perfectly Balanced": [MEMES.thinkCat, MEMES.standDog],
+  "Empty Pockets": [MEMES.thinkMonkey, MEMES.helloDog],
+};
+const memesFor = (title, pnl) =>
+  RANK_MEMES[title] || (title.endsWith(" Maxi") ? RANK_MEMES.Maxi : null)
+  || (pnl > 0 ? [MEMES.clapCat] : pnl < 0 ? [MEMES.dazedCat] : [MEMES.danceCat]);
+let memeSet = [];
+let memeIndex = 0;
+let memeTone = "flat";
+
 const clapCat = $("clapCat");
 function restartGif() {
   const img = clapCat.querySelector("img");
   const src = img.getAttribute("src").split("?")[0];
   img.src = src + "?t=" + Date.now(); // makes the gif play from the start
 }
+function showMeme(i, talk) {
+  memeIndex = i % memeSet.length;
+  const m = memeSet[memeIndex];
+  const img = clapCat.querySelector("img");
+  img.src = m.src;
+  img.alt = m.alt;
+  restartGif();
+  clapCat.classList.toggle("is-soft", !!m.soft); // faded edges, no glow needed
+  clapCat.classList.toggle("is-rank", memeTone === "up");
+  clapCat.classList.toggle("is-l", memeTone === "down");
+  $("memeCredit").textContent = m.credit || "";
+  $("memeCredit").hidden = !m.credit;
+  if (talk) say(pick(m.lines), miniBubble);
+  else miniBubble.textContent = m.bubble;
+}
 clapCat.addEventListener("click", () => {
   squish(clapCat);
-  restartGif();
-  if (!currentReaction) return;
-  say(pick(currentReaction.lines), miniBubble);
-  if (currentReaction === REACTIONS.w) burstConfetti();
+  if (memeSet.length > 1) {
+    showMeme(memeIndex + 1, true); // swap to the next meme for this title
+  } else {
+    restartGif();
+    say(pick(memeSet[memeIndex].lines), miniBubble);
+  }
+  if (memeSet[memeIndex].confetti) burstConfetti();
 });
 
 let pokeCount = 0;
@@ -277,11 +406,29 @@ $("pasteBtn").addEventListener("click", async () => {
     say("your browser blocked paste, use Ctrl+V gng");
   }
 });
-$("sampleBtn").addEventListener("click", () => {
-  els.input.value = SAMPLE_WALLET;
+// Demo chips under the search bar (hidden once the real API is plugged in)
+let demoIndex = 0;
+function loadDemo(i) {
+  demoIndex = (i + DEMOS.length) % DEMOS.length;
+  const addr = DEMOS[demoIndex].data.wallet;
+  els.input.value = addr;
   updateValidation();
-  runSearch(SAMPLE_WALLET);
-});
+  runSearch(addr);
+}
+if (API_BASE) {
+  $("demoRow").hidden = true;
+} else {
+  DEMOS.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = d.label;
+    if (i === 0) b.id = "sampleBtn";
+    b.addEventListener("click", () => loadDemo(i));
+    $("demoChips").appendChild(b);
+  });
+  $("nextDemoBtn").hidden = false;
+  $("nextDemoBtn").addEventListener("click", () => loadDemo(demoIndex + 1));
+}
 
 // Keyboard: "/" jumps to search, Escape goes back
 document.addEventListener("keydown", (e) => {
@@ -317,7 +464,9 @@ function showView(name) {
 async function fetchWallet(address) {
   if (!API_BASE) {
     await new Promise((r) => setTimeout(r, 1400)); // fake network delay so you can see the loader
-    return { ...MOCK_DATA, wallet: address };
+    const demo = DEMOS.find((d) => d.data.wallet === address);
+    if (demo) demoIndex = DEMOS.indexOf(demo);
+    return structuredClone(demo ? demo.data : { ...MOCK_DATA, wallet: address });
   }
   const res = await fetch(`${API_BASE}/wallet/${encodeURIComponent(address)}`);
   const body = await res.json().catch(() => ({}));
@@ -370,24 +519,17 @@ function renderResults(data) {
   const pnlEl = $("pnlValue");
   pnlEl.className = "pnl " + tone(pnl);
   countUp(pnlEl, pnl);
-  $("verdictLine").textContent = pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat);
-  // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
-  // No L pic yet, so red wallets get the crying blob.
-  currentReaction = pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat;
-  clapCat.hidden = !currentReaction;
-  miniMascot.hidden = !!currentReaction;
-  if (currentReaction) {
-    const img = clapCat.querySelector("img");
-    img.src = currentReaction.src;
-    img.alt = currentReaction.alt;
-    clapCat.classList.toggle("is-flat", currentReaction === REACTIONS.flat);
-    restartGif();
-    miniBubble.textContent = currentReaction.bubble;
-  } else {
-    setMood("sad", miniMascot);
-    miniBubble.textContent = "pain.";
-  }
-  $("asOf").textContent = data.asOf ? "Updated " + new Date(data.asOf).toLocaleString() : "";
+  $("verdictLine").textContent = holdings.length
+    ? pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat)
+    : pick(["no bags to check, brother", "this wallet is giving air gng", "fresh wallet, who dis"]);
+  // Pick the reaction meme for this wallet's rank (random one if the title has several)
+  memeSet = memesFor(getRank(data).title, pnl);
+  memeTone = pnl > 0 ? "up" : pnl < 0 ? "down" : "flat";
+  clapCat.hidden = false;
+  miniMascot.hidden = true;
+  showMeme(Math.floor(Math.random() * memeSet.length), false);
+  $("asOf").textContent = (data.asOf ? "Updated " + new Date(data.asOf).toLocaleString() : "")
+    + (API_BASE ? "" : ". Demo data, not live from the chain.");
   startSlotClock(data.asOf);
 
   const first = history[0]?.portfolioValueUsd || 0;
@@ -404,7 +546,8 @@ function renderResults(data) {
   renderHoldings();
   renderHistory();
 
-  if (pnl > 0) burstConfetti();
+  // no confetti for the calm ones: quiet winners stay quiet, and Andy is napping
+  if (pnl > 0 && !["Quiet Winner", "Stablecoin Andy"].includes(getRank(data).title)) burstConfetti();
 }
 
 // ---------- Wallet rank ----------
@@ -681,6 +824,9 @@ function renderHistory() {
       <td class="num">${usd(r.value)}</td>
       <td class="num ${r.first ? "" : tone(r.change)}">${r.first ? "first day" : signedUsd(r.change)}</td>
     </tr>`).join("");
+  els.historyEmpty.textContent = (currentData.history || []).length
+    ? "No days match this filter. Try All days."
+    : "No history yet for this wallet.";
   els.historyEmpty.hidden = rows.length > 0;
 }
 

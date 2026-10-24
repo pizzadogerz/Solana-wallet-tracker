@@ -29,7 +29,7 @@
         <button class="mascot hero-cat" id="mascot" type="button" aria-label="Poke the dog">
           <img src="assets/hero-dog.webp" alt="A fluffy white dog dancing" width="200" height="312">
         </button>
-        <img id="errorPic" class="error-pic" src="assets/error-husky.jpg" alt="A husky pointing at you suspiciously" width="240" height="301" hidden>
+        <img id="errorPic" class="error-pic" src="assets/error-husky.webp" alt="A husky pointing at you suspiciously" width="240" height="301" hidden>
       </div>
 
       <h1 class="headline">whose bag we checking?</h1>
@@ -47,7 +47,10 @@
         <button type="button" class="link-btn" id="xrayWhyBtn" aria-expanded="false">Why no 0, O, I or l?</button>
         <p class="xray-why" id="xrayWhy" hidden>Solana addresses are written in base58: every digit and letter except 0, O, I and l, because those four are too easy to mix up when you copy one by hand. The address is a 32 byte public key, which comes out as 32 to 44 of these characters.</p>
       </div>
-      <button type="button" id="sampleBtn" class="link-btn">no wallet handy? try the sample one</button>
+      <div class="demo-row" id="demoRow">
+        <p class="demo-label">No wallet handy? Try a demo one</p>
+        <div class="demo-chips" id="demoChips"></div>
+      </div>
 
       <section class="speedrun" aria-labelledby="speedTitle">
         <div class="speed-head">
@@ -85,13 +88,15 @@
             <div class="bubble mini-bubble" id="miniBubble">yo</div>
             <button class="mascot mini-mascot" id="miniMascot" type="button" aria-label="Poke the blob"></button>
             <button class="clap-cat" id="clapCat" type="button" aria-label="Reaction meme, click it" hidden>
-              <img src="assets/clap-cat.gif" alt="A black cat standing up and clapping" width="165" height="216">
+              <img src="assets/clap-cat.webp" alt="A black cat standing up and clapping" width="165" height="216">
             </button>
+            <p class="meme-credit" id="memeCredit" hidden></p>
           </div>
         <div class="verdict-side">
           <p class="stat"><span id="pfValue">$0</span> portfolio value</p>
           <p class="stat"><span id="pfChange">0%</span> over <span id="pfDays">0</span> days</p>
           <button type="button" class="ghost" id="newSearchBtn">Check another wallet</button>
+          <button type="button" class="ghost" id="nextDemoBtn" hidden>Next demo wallet</button>
         </div>
       </div>
 
@@ -161,7 +166,7 @@
 
     <!-- LOADING / ERROR -->
     <section id="loadingView" class="view loading-view" hidden>
-      <img class="loading-pic" src="assets/loading-dog.gif" alt="A dog dancing while the wallet loads" width="240" height="240">
+      <img class="loading-pic" src="assets/loading-dog.webp" alt="A dog dancing while the wallet loads" width="240" height="240">
       <p id="loadingLine">hold up brother, reading the chain</p>
     </section>
   </main>

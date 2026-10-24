@@ -458,3 +458,36 @@ table.history { width: 100%; border-collapse: collapse; font-size: .95rem; }
   padding: 2px 8px; font-size: .8rem; cursor: pointer; font-weight: 600;
 }
 .copy-mini:hover { border-color: var(--muted); }
+
+/* ---------- Demo wallet chips ---------- */
+.demo-row { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; }
+.demo-label { margin: 0; color: var(--muted); font-size: .9rem; }
+.demo-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 640px; }
+.demo-chips button {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 12px; cursor: pointer; font-weight: 600; font-size: .88rem;
+  transition: border-color .15s, transform .15s;
+}
+.demo-chips button:hover { border-color: var(--a2); transform: translateY(-1px); }
+
+.clap-cat.is-l { box-shadow: 0 0 0 4px var(--down); transform: rotate(-4deg); }
+.clap-cat.is-rank { box-shadow: 0 0 0 4px var(--a1), 0 0 0 8px var(--a2); }
+
+/* ---------- Memes without frames: cut out, glow in the theme color ---------- */
+.clap-cat, .clap-cat.is-flat, .clap-cat.is-l, .clap-cat.is-rank {
+  background: none; border-radius: 0; overflow: visible; box-shadow: none;
+}
+.clap-cat img, .error-pic, .loading-pic {
+  filter: drop-shadow(0 0 1px var(--a1)) drop-shadow(0 8px 18px var(--a1));
+}
+.clap-cat.is-l img { filter: drop-shadow(0 0 18px var(--down)); }
+.clap-cat.is-rank img { filter: drop-shadow(0 0 1px var(--a2)) drop-shadow(0 8px 20px var(--a2)); }
+.error-pic, .loading-pic { border-radius: 0; box-shadow: none; }
+.error-pic { width: 130px; filter: drop-shadow(0 0 16px var(--down)); }
+.loading-pic { width: clamp(150px, 26vw, 200px); animation: none; }
+.meme-credit { margin: 0; font-size: .72rem; color: var(--muted); }
+.clap-cat.is-soft img { filter: none; }
+.clap-cat img { max-height: 250px; width: auto; max-width: 100%; margin: 0 auto; }
+.error-pic { filter: none; }
+.error-pic { filter: drop-shadow(0 0 1px var(--down)) drop-shadow(0 6px 16px var(--down)); }
+.error-pic { filter: none; width: 140px; }
