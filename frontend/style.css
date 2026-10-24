@@ -489,3 +489,4 @@ table.history { width: 100%; border-collapse: collapse; font-size: .95rem; }
 .clap-cat.is-soft img { filter: none; }
 .clap-cat img { max-height: 250px; width: auto; max-width: 100%; margin: 0 auto; }
 .error-pic { filter: none; }
+.error-pic { filter: drop-shadow(0 0 1px var(--down)) drop-shadow(0 6px 16px var(--down)); }

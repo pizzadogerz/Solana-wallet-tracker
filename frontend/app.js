@@ -193,7 +193,7 @@ const MEMES = {
     lines: ["he's been practicing this for weeks", "bro is up so bad the dog is dancing", "W W W, no L in sight", "certified. collected. dancing."],
   },
   pointDog: {
-    src: "assets/w-point-dog.webp", alt: "A dog standing up and pointing at the sky", soft: true, bubble: "number go up ☝️", confetti: true,
+    src: "assets/w-point-dog.webp", alt: "A dog standing up and pointing at the sky", bubble: "number go up ☝️", confetti: true,
     lines: ["up only brother", "to the moon, and he's pointing at it", "chart said ☝️ so dog said ☝️", "bro called the top. it kept going."],
   },
   quietCat: {
@@ -204,12 +204,8 @@ const MEMES = {
     src: "assets/andy-dog.webp", alt: "A dog lying on its back, lazily clapping", bubble: "safe and comfy gng",
     lines: ["lying down, still winning", "0% stress, 100% USDC", "polite clap for my stablecoins", "andy doesn't get up for less than 1%"],
   },
-  andyCat: {
-    src: "assets/andy-cat.svg", alt: "A cat napping on a dollar coin under a striped blanket", bubble: "do not disturb, earning 0%",
-    lines: ["volatility? not in this house", "andy sleeps well at night gng", "safe, boring, undefeated", "wake me up when it's a bull run"],
-  },
   maxiKitten: {
-    src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", soft: true, credit: "clip by @akash_sidhu_123", bubble: "say one bad word about my coin",
+    src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", credit: "clip by @akash_sidhu_123", bubble: "say one bad word about my coin",
     lines: ["one coin, and it will fight you for it", "diversify? never heard of her", "tiny wallet, big loyalty gng", "come at my bag brother"],
   },
   earsMonkey: {
@@ -221,24 +217,36 @@ const MEMES = {
     lines: ["lowkey yes brother", "slightly cooked, still edible", "it's giving medium rare gng", "look at me. you're fine. maybe."],
   },
   dazedCat: {
-    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", soft: true, bubble: "it's joever brother",
+    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", bubble: "it's joever brother",
     lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
   },
   thinkCat: {
-    src: "assets/think-cat.webp", alt: "A cat with its paw on its chin, thinking", soft: true, bubble: "buy? sell? ...nah",
+    src: "assets/think-cat.webp", alt: "A cat with its paw on its chin, thinking", bubble: "buy? sell? ...nah",
     lines: ["perfectly balanced, deeply thinking", "zero PnL needs zero decisions", "the cat is calculating gng", "hmm. hmm. still zero."],
   },
   danceCat: {
     src: "assets/flat-cat.gif", alt: "A cat dancing, unbothered", bubble: "unbothered. moisturized.",
     lines: ["not up, not down, just dancing", "zero PnL, full vibes gng", "the cat doesn't care brother"],
   },
+  standDog: {
+    src: "assets/stand-dog.webp", alt: "A chihuahua standing up on its back legs, perfectly still", bubble: "zero PnL, full vibes gng",
+    lines: ["perfectly balanced, perfectly still", "not up, not down, just standing here", "holding the line at exactly zero", "no moves, no losses brother"],
+  },
+  carDog: {
+    src: "assets/car-dog.webp", alt: "A chihuahua sitting calmly in a car", bubble: "wake me up when it's a bull run",
+    lines: ["just cruising on stablecoins gng", "scenic drive, zero volatility", "seatbelt on, risk off", "are we there yet? (no, still 0%)"],
+  },
+  helloDog: {
+    src: "assets/hello-dog.webp", alt: "A golden retriever leaning into the camera like ummm hello", bubble: "ummm hellooo? where's the money",
+    lines: ["the wallet is giving air", "knock knock, anybody home?", "bro there's nothing in here", "hellooo? any tokens??"],
+  },
+  cryingPug: {
+    src: "assets/crying-pug.webp", alt: "A pug crying while staring at a phone", bubble: "unrealized loss, realized pain",
+    lines: ["he checked the chart again", "stop refreshing brother", "it's fine, they're just tears", "the phone said red. the pug said 😢"],
+  },
   thinkMonkey: {
     src: "assets/think-monkey.webp", alt: "A monkey rubbing its chin, deep in thought", bubble: "hmm, where did my coins go",
     lines: ["let me think... nope, still empty", "big brain, empty wallet", "thinking about buying something gng", "the wallet is a mystery brother"],
-  },
-  emptyDog: {
-    src: "assets/empty-dog.svg", alt: "A confused dog tilting its head next to an empty wallet with a moth flying out", bubble: "where the coins at brother?",
-    lines: ["just a moth in here gng", "the wallet is giving air", "bro checked the wrong wallet?", "zero tokens, full confusion"],
   },
 };
 
@@ -247,12 +255,12 @@ const MEMES = {
 const RANK_MEMES = {
   "Certified W Collector": [MEMES.pointDog, MEMES.goldenDog],
   "Quiet Winner": [MEMES.quietCat],
-  "Stablecoin Andy": [MEMES.andyDog, MEMES.andyCat],
+  "Stablecoin Andy": [MEMES.andyDog, MEMES.carDog],
   Maxi: [MEMES.maxiKitten],
-  "Professional Bag Holder": [MEMES.earsMonkey, MEMES.dazedCat],
+  "Professional Bag Holder": [MEMES.earsMonkey, MEMES.cryingPug],
   "Down Bad": [MEMES.cookedDog, MEMES.dazedCat],
-  "Perfectly Balanced": [MEMES.thinkCat, MEMES.danceCat],
-  "Empty Pockets": [MEMES.thinkMonkey, MEMES.emptyDog],
+  "Perfectly Balanced": [MEMES.thinkCat, MEMES.standDog],
+  "Empty Pockets": [MEMES.thinkMonkey, MEMES.helloDog],
 };
 const memesFor = (title, pnl) =>
   RANK_MEMES[title] || (title.endsWith(" Maxi") ? RANK_MEMES.Maxi : null)
