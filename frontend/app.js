@@ -206,7 +206,14 @@ const RANK_MEMES = {
     src: "assets/quiet-cat.webp", alt: "A calico cat dancing with a completely serious face", bubble: "acting like it's nothing",
     lines: ["straight face, green bags", "not bragging, just vibing gng", "she's up and she doesn't care", "silent W brother"],
   },
+  // "Maxi" covers every coin: SOL Maxi, JUP Maxi, and so on
+  Maxi: {
+    src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", bubble: "say one bad word about my coin",
+    lines: ["one coin, and it will fight you for it", "diversify? never heard of her", "tiny wallet, big loyalty gng", "come at my bag brother"],
+  },
 };
+// finds the meme for a rank title (any "... Maxi" title uses the Maxi one)
+const rankMeme = (title) => RANK_MEMES[title] || (title.endsWith(" Maxi") ? RANK_MEMES.Maxi : undefined);
 let currentReaction = null;
 
 // clapping cat (or other reaction): click it for more
@@ -448,7 +455,7 @@ function renderResults(data) {
   countUp(pnlEl, pnl);
   $("verdictLine").textContent = pick(pnl > 0 ? LINES.up : pnl < 0 ? LINES.down : LINES.flat);
   // Pick a reaction meme: W wallet = clapping cat, flat = dancing cat.
-  currentReaction = RANK_MEMES[getRank(data).title]
+  currentReaction = rankMeme(getRank(data).title)
     || (pnl > 0 ? REACTIONS.w : pnl < 0 ? REACTIONS.l || null : REACTIONS.flat);
   clapCat.hidden = !currentReaction;
   miniMascot.hidden = !!currentReaction;
