@@ -472,3 +472,20 @@ table.history { width: 100%; border-collapse: collapse; font-size: .95rem; }
 
 .clap-cat.is-l { box-shadow: 0 0 0 4px var(--down); transform: rotate(-4deg); }
 .clap-cat.is-rank { box-shadow: 0 0 0 4px var(--a1), 0 0 0 8px var(--a2); }
+
+/* ---------- Memes without frames: cut out, glow in the theme color ---------- */
+.clap-cat, .clap-cat.is-flat, .clap-cat.is-l, .clap-cat.is-rank {
+  background: none; border-radius: 0; overflow: visible; box-shadow: none;
+}
+.clap-cat img, .error-pic, .loading-pic {
+  filter: drop-shadow(0 0 1px var(--a1)) drop-shadow(0 8px 18px var(--a1));
+}
+.clap-cat.is-l img { filter: drop-shadow(0 0 18px var(--down)); }
+.clap-cat.is-rank img { filter: drop-shadow(0 0 1px var(--a2)) drop-shadow(0 8px 20px var(--a2)); }
+.error-pic, .loading-pic { border-radius: 0; box-shadow: none; }
+.error-pic { width: 130px; filter: drop-shadow(0 0 16px var(--down)); }
+.loading-pic { width: clamp(150px, 26vw, 200px); animation: none; }
+.meme-credit { margin: 0; font-size: .72rem; color: var(--muted); }
+.clap-cat.is-soft img { filter: none; }
+.clap-cat img { max-height: 250px; width: auto; max-width: 100%; margin: 0 auto; }
+.error-pic { filter: none; }

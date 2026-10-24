@@ -183,11 +183,11 @@ miniMascot.addEventListener("click", () => {
 // Reaction memes on the results card. Add an "l" entry here when you have an L pic.
 const REACTIONS = {
   w: {
-    src: "assets/clap-cat.gif", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏",
+    src: "assets/clap-cat.webp", alt: "A black cat standing up and clapping", bubble: "W wallet gng 👏",
     lines: ["the cat approves gng", "standing ovation brother", "even the cat is proud of you", "W W W W"],
   },
   l: {
-    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", bubble: "it's joever brother",
+    src: "assets/l-cat.webp", alt: "A dazed cat staring into the camera", soft: true, bubble: "it's joever brother",
     lines: ["bro saw his portfolio", "this cat has seen things gng", "unrealized loss, realized pain", "we hold. we cry. we hold."],
   },
   flat: {
@@ -208,7 +208,7 @@ const RANK_MEMES = {
   },
   // "Maxi" covers every coin: SOL Maxi, JUP Maxi, and so on
   Maxi: {
-    src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", bubble: "say one bad word about my coin",
+    src: "assets/maxi-kitten.webp", alt: "A tiny kitten throwing punches", soft: true, credit: "clip by @akash_sidhu_123", bubble: "say one bad word about my coin",
     lines: ["one coin, and it will fight you for it", "diversify? never heard of her", "tiny wallet, big loyalty gng", "come at my bag brother"],
   },
 };
@@ -468,7 +468,11 @@ function renderResults(data) {
     clapCat.classList.toggle("is-rank", Object.values(RANK_MEMES).includes(currentReaction));
     restartGif();
     miniBubble.textContent = currentReaction.bubble;
+    clapCat.classList.toggle("is-soft", !!currentReaction.soft); // faded edges, no glow needed
+    $("memeCredit").textContent = currentReaction.credit || "";
+    $("memeCredit").hidden = !currentReaction.credit;
   } else {
+    $("memeCredit").hidden = true;
     setMood("sad", miniMascot);
     miniBubble.textContent = "pain.";
   }
