@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.request
+from datetime import datetime, timezone
 
 def lambda_handler(event, context):
     api_key = os.environ.get("HELIUS_API_KEY")
@@ -33,27 +34,45 @@ def lambda_handler(event, context):
         result = json.loads(resp.read())["result"]
     print("items:", len(result["items"]))
     print("SOL:", result.get("nativeBalance"))
-    
+
+    holdings = []
+    for item in result["items"]:
+        token_info = item.get("token_info") or {}
+        price_info = token_info.get("price_info")
+        if not price_info:
+            continue
+        amount = token_info["balance"] / 10 ** token_info["decimals"]        # raw balance ÷ 10 to the power of decimals
+        holdings.append({
+            "mint": item["id"],
+            "symbol": token_info.get("symbol"),
+            "amount": amount,
+            "avgCostUsd": 0,
+            "currentPriceUsd": price_info["price_per_token"],    # from price_info
+            "unrealizedPnlUsd": 0
+        })
+    native = result.get("nativeBalance") or {}
+    if native.get("lamports"):
+        holdings.append({
+            "mint": "So11111111111111111111111111111111111111112",
+            "symbol": "SOL",
+            "amount": native["lamports"] / 10 ** 9,
+            "avgCostUsd": 0,
+            "currentPriceUsd": native["price_per_sol"],
+            "unrealizedPnlUsd": 0
+        })
+    print("holdings:", holdings)
+
+    total_value = sum(h["amount"] * h["currentPriceUsd"] for h in holdings)
+    now = datetime.now(timezone.utc)
     data = {
         "wallet": wallet,
-        "asOf": "2026-09-24T04:00:00Z",
-        "totalPnlUsd": 140.00,
-        "holdings": [
-        {
-                "mint": "So11111111111111111111111111111111111111112",
-                "symbol": "SOL",
-                "amount": 12.5,
-                "avgCostUsd": 145.20,
-                "currentPriceUsd": 162.80,
-                "unrealizedPnlUsd": 220.00
-         }
-        ],
+        "asOf": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "totalPnlUsd": 0,
+        "holdings": holdings,
         "history": [
-            {"date": "2026-09-22", "portfolioValueUsd": 2521.75},
-            {"date": "2026-09-23", "portfolioValueUsd": 2495.20},
-            {"date": "2026-09-24", "portfolioValueUsd": 2559.75}
+            {"date": now.strftime("%Y-%m-%d"), "portfolioValueUsd": total_value}
         ]
-        } 
+    }
     return {
         "statusCode": 200,
         "headers": {"Access-Control-Allow-Origin": "*"},
