@@ -1,9 +1,9 @@
 import json
 import os
+import urllib.request
 
 def lambda_handler(event, context):
     api_key = os.environ.get("HELIUS_API_KEY")
-    print("key loaded:", api_key is not None)
     wallet = (event.get("pathParameters") or {}).get("address")
     if not wallet or not (32 <= len(wallet) <= 44):
         return {
@@ -11,6 +11,13 @@ def lambda_handler(event, context):
             "headers": {"Access-Control-Allow-Origin": "*"},
             "body": json.dumps({"error": "invalid_wallet", "message": "Wallet address is missing or invalid"})
         }
+    url = f"https://mainnet.helius-rpc.com/v0/addresses/{wallet}/transactions?api-key={api_key}&limit=5&type=SWAP"
+    with urllib.request.urlopen(url) as resp:
+        txs = json.loads(resp.read())
+    swap = txs[0]
+    print("timestamp:", swap.get("timestamp"))
+    print("tokenTransfers:", json.dumps(swap.get("tokenTransfers"), indent=2))
+    print("nativeTransfers:", json.dumps(swap.get("nativeTransfers"), indent=2))
     data = {
         "wallet": wallet,
         "asOf": "2026-09-24T04:00:00Z",
@@ -41,7 +48,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     fake_event = {
-        "pathParameters": {"address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"}
+        "pathParameters": {"address": "CmujpE7gPGTFVVF5R1X2bSxByDjyjCQWmwvTLzW9bG68"}
     }
     print(lambda_handler(fake_event, None))
     
