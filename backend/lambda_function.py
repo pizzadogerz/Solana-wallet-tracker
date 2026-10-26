@@ -11,13 +11,29 @@ def lambda_handler(event, context):
             "headers": {"Access-Control-Allow-Origin": "*"},
             "body": json.dumps({"error": "invalid_wallet", "message": "Wallet address is missing or invalid"})
         }
-    url = f"https://mainnet.helius-rpc.com/v0/addresses/{wallet}/transactions?api-key={api_key}&limit=5&type=SWAP"
-    with urllib.request.urlopen(url) as resp:
-        txs = json.loads(resp.read())
-    swap = txs[0]
-    print("timestamp:", swap.get("timestamp"))
-    print("tokenTransfers:", json.dumps(swap.get("tokenTransfers"), indent=2))
-    print("nativeTransfers:", json.dumps(swap.get("nativeTransfers"), indent=2))
+
+
+    body = json.dumps({
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "getAssetsByOwner",
+        "params": {
+            "ownerAddress": wallet,
+            "page": 1,
+            "limit": 100,
+            "options": {"showFungible": True, "showNativeBalance": True}
+        }
+    }).encode()
+    req = urllib.request.Request(
+        f"https://mainnet.helius-rpc.com/?api-key={api_key}",
+        data=body,
+        headers={"Content-Type": "application/json"}
+    )
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read())["result"]
+    print("items:", len(result["items"]))
+    print("SOL:", result.get("nativeBalance"))
+    
     data = {
         "wallet": wallet,
         "asOf": "2026-09-24T04:00:00Z",
