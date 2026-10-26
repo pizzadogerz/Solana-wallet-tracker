@@ -1,7 +1,9 @@
 import json
-
+import os
 
 def lambda_handler(event, context):
+    api_key = os.environ.get("HELIUS_API_KEY")
+    print("key loaded:", api_key is not None)
     wallet = (event.get("pathParameters") or {}).get("address")
     if not wallet or not (32 <= len(wallet) <= 44):
         return {
@@ -36,7 +38,10 @@ def lambda_handler(event, context):
         }
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
     fake_event = {
         "pathParameters": {"address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"}
     }
     print(lambda_handler(fake_event, None))
+    
