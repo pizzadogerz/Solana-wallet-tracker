@@ -30,10 +30,15 @@ def lambda_handler(event, context):
         data=body,
         headers={"Content-Type": "application/json"}
     )
-    with urllib.request.urlopen(req) as resp:
-        result = json.loads(resp.read())["result"]
-    print("items:", len(result["items"]))
-    print("SOL:", result.get("nativeBalance"))
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            result = json.loads(resp.read())["result"]
+    except Exception:
+        return {
+            "statusCode": 502,
+            "headers": {"Access-Control-Allow-Origin": "*"},
+            "body": json.dumps({"error": "upstream_error", "message": "Could not fetch wallet data, try again"})
+        }
 
     holdings = []
     for item in result["items"]:
@@ -60,7 +65,6 @@ def lambda_handler(event, context):
             "currentPriceUsd": native["price_per_sol"],
             "unrealizedPnlUsd": 0
         })
-    print("holdings:", holdings)
 
     total_value = sum(h["amount"] * h["currentPriceUsd"] for h in holdings)
     now = datetime.now(timezone.utc)
