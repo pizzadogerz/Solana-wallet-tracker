@@ -3,10 +3,22 @@ import os
 import urllib.request
 from datetime import datetime, timezone
 
+B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+def is_solana_address(addr):
+    num = 0
+    for ch in addr:
+        if ch not in B58:
+            return False
+        num = num * 58 + B58.index(ch)
+    leading_zeros = len(addr) - len(addr.lstrip("1"))
+    byte_len = (num.bit_length() + 7) // 8
+    return leading_zeros + byte_len == 32
+
 def lambda_handler(event, context):
     api_key = os.environ.get("HELIUS_API_KEY")
     wallet = (event.get("pathParameters") or {}).get("address")
-    if not wallet or not (32 <= len(wallet) <= 44):
+    if not wallet or not is_solana_address(wallet):
         return {
             "statusCode": 400,
             "headers": {"Access-Control-Allow-Origin": "*"},
