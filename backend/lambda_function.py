@@ -48,14 +48,20 @@ def lambda_handler(event, context):
         if len(result["items"]) < 1000 or page >= 3:
             break
         page += 1
-
+   
+    WSOL_MINT = "So11111111111111111111111111111111111111112"
+    wsol_amount = 0
     holdings = []
+
     for item in items:
         token_info = item.get("token_info") or {}
         price_info = token_info.get("price_info")
         if not price_info:
             continue
         amount = token_info["balance"] / 10 ** token_info["decimals"]        # raw balance ÷ 10 to the power of decimals
+        if item["id"] == WSOL_MINT:
+            wsol_amount += amount
+            continue
         holdings.append({
             "mint": item["id"],
             "symbol": token_info.get("symbol"),
@@ -64,11 +70,11 @@ def lambda_handler(event, context):
             "currentPriceUsd": price_info["price_per_token"],    # from price_info
             "unrealizedPnlUsd": 0
         })
-    if native.get("lamports"):
+    if native.get("lamports") or wsol_amount:
         holdings.append({
-            "mint": "So11111111111111111111111111111111111111112",
+            "mint": WSOL_MINT,
             "symbol": "SOL",
-            "amount": native["lamports"] / 10 ** 9,
+            "amount": native.get("lamports", 0) / 10 ** 9 + wsol_amount,
             "avgCostUsd": 0,
             "currentPriceUsd": native["price_per_sol"],
             "unrealizedPnlUsd": 0
