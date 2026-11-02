@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.request
+import cache
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
@@ -21,7 +22,7 @@ def is_solana_address(addr):
 DAYS = 7
 MAX_PAGES = 15     # ~1s per page; keeps us under API Gateway's 30s limit
 
-def fetch_swaps(wallet, api_key):
+def fetch_swaps(wallet, api_key, stop_sig=None):
     cutoff = datetime.now(timezone.utc).timestamp() - DAYS * 86400
     swaps = []
     before = ""
@@ -35,7 +36,11 @@ def fetch_swaps(wallet, api_key):
                 batch = json.loads(resp.read())
         except Exception:
             break                                   # no more swaps found, stop paging
-        swaps += [s for s in batch if s["timestamp"] >= cutoff]
+        for s in batch:
+            if s["signature"] == stop_sig:
+                return swaps                        # reached what we already saved, stop
+            if s["timestamp"] >= cutoff:
+                swaps.append(s)
         if not batch or batch[-1]["timestamp"] < cutoff:
             break                                   # reached the end or went past 7 days
         before = f"&before={batch[-1]['signature']}"
@@ -125,7 +130,8 @@ def lambda_handler(event, context):
         }
 
 
-    swaps_job = executor.submit(fetch_swaps, wallet, api_key)    # start trades now, in the background
+    saved = cache.load(wallet) or {"records": [], "last_sig": None}    # what we saved last time
+    swaps_job = executor.submit(fetch_swaps, wallet, api_key, saved["last_sig"])    # only NEW trades
 
     items = []
     page = 1
@@ -202,7 +208,11 @@ def lambda_handler(event, context):
 
     try:
         swaps = swaps_job.result()                                # wait for the background trades
-        records = [r for r in (to_record(s, wallet) for s in swaps) if r]
+        new_records = [r for r in (to_record(s, wallet) for s in swaps) if r]
+        cutoff = datetime.now(timezone.utc).timestamp() - DAYS * 86400
+        records = [r for r in new_records + saved["records"] if r["time"] >= cutoff]   # new + saved, last 7 days only
+        last_sig = swaps[0]["signature"] if swaps else saved["last_sig"]               # newest trade = new bookmark
+        cache.save(wallet, records, last_sig)
         oldest = min((r["time"] for r in records), default=0)
         piles = avg_costs(records, fetch_sol_prices(oldest)) if records else {}
     except Exception:
