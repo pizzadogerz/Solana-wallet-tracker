@@ -15,30 +15,40 @@ def is_solana_address(addr):
     byte_len = (num.bit_length() + 7) // 8
     return leading_zeros + byte_len == 32
 
+DAYS = 7
+MAX_PAGES = 15     # ~1s per page; keeps us under API Gateway's 30s limit
+
 def fetch_swaps(wallet, api_key):
-    url = (
-        f"https://mainnet.helius-rpc.com/v0/addresses/{wallet}/transactions"
-        f"?api-key={api_key}&type=SWAP&limit=100"
-    )
-    with urllib.request.urlopen(url, timeout=20) as resp:
-        return json.loads(resp.read())
+    cutoff = datetime.now(timezone.utc).timestamp() - DAYS * 86400
+    swaps = []
+    before = ""
+    for page in range(MAX_PAGES):
+        url = (
+            f"https://mainnet.helius-rpc.com/v0/addresses/{wallet}/transactions"
+            f"?api-key={api_key}&limit=100{before}"    # no type=SWAP: bot trades are labelled TRANSFER
+        )
+        try:
+            with urllib.request.urlopen(url, timeout=20) as resp:
+                batch = json.loads(resp.read())
+        except Exception:
+            break                                   # no more swaps found, stop paging
+        swaps += [s for s in batch if s["timestamp"] >= cutoff]
+        if not batch or batch[-1]["timestamp"] < cutoff:
+            break                                   # reached the end or went past 7 days
+        before = f"&before={batch[-1]['signature']}"
+    return swaps
 
 def net_flows(swap, wallet):
+    # use each account's real balance change: works even when Helius doesn't label it a swap
     net = {}
-    for t in swap.get("tokenTransfers", []):
-        if t["toUserAccount"] == wallet:
-            net[t["mint"]] = net.get(t["mint"], 0) + t["tokenAmount"]
-        if t["fromUserAccount"] == wallet:
-            net[t["mint"]] = net.get(t["mint"], 0) - t["tokenAmount"]
-    for n in swap.get("nativeTransfers", []):
-        sol = n["amount"] / 10 ** 9
-        if n["toUserAccount"] == wallet:
-            net["SOL"] = net.get("SOL", 0) + sol
-        if n["fromUserAccount"] == wallet:
-            net["SOL"] = net.get("SOL", 0) - sol
-    wsol = net.pop("So11111111111111111111111111111111111111112", 0)
-    native_sol = net.get("SOL", 0)
-    net["SOL"] = wsol if abs(wsol) > abs(native_sol) else native_sol
+    for a in swap.get("accountData", []):
+        if a["account"] == wallet:
+            net["SOL"] = net.get("SOL", 0) + a["nativeBalanceChange"] / 10 ** 9
+        for t in a.get("tokenBalanceChanges", []):
+            if t["userAccount"] == wallet:
+                raw = t["rawTokenAmount"]
+                mint = "SOL" if t["mint"] == "So11111111111111111111111111111111111111112" else t["mint"]
+                net[mint] = net.get(mint, 0) + int(raw["tokenAmount"]) / 10 ** raw["decimals"]
     net = {k: v for k, v in net.items() if abs(v) > 1e-9}
     return net
 
@@ -48,6 +58,8 @@ def to_record(swap, wallet):
     if len(net) != 1 or sol == 0:
         return None
     mint, amount = list(net.items())[0]
+    if (amount > 0) == (sol > 0):
+        return None     # token and SOL moved the same way: a transfer or airdrop, not a trade
     return {
         "time": swap["timestamp"],
         "mint": mint,
@@ -69,10 +81,10 @@ def fetch_sol_prices():
 
 def avg_costs(records, sol_prices):
     piles = {}
-    for r in sorted(records, key=lambda r: r["time"]):          # oldest first
+    for r in sorted(records[::-1], key=lambda r: r["time"]):    # oldest first (flip first so same-second trades keep order)
         day = datetime.fromtimestamp(r["time"], timezone.utc).strftime("%Y-%m-%d")
         usd = r["sol"] * sol_prices.get(day, 0)                  # this trade in USD
-        pile = piles.setdefault(r["mint"], {"amount": 0, "cost": 0})
+        pile = piles.setdefault(r["mint"], {"amount": 0, "cost": 0, "realized": 0})
 
         if r["side"] == "buy":
             pile["cost"] += usd
@@ -80,10 +92,16 @@ def avg_costs(records, sol_prices):
         else:
             if pile["amount"] == 0:
                 continue                    # sold something we never saw bought, skip
-            sold = min(r["amount"], pile["amount"])
-            avg = pile["cost"] / pile["amount"]
-            pile["cost"] -= sold * avg
-            pile["amount"] -= sold
+            if r["amount"] >= pile["amount"]:
+                # sold everything (or more than we saw bought): close the pile, count all the SOL received
+                pile["realized"] += usd - pile["cost"]
+                pile["cost"] = 0
+                pile["amount"] = 0
+            else:
+                avg = pile["cost"] / pile["amount"]
+                pile["realized"] += usd - r["amount"] * avg
+                pile["cost"] -= r["amount"] * avg
+                pile["amount"] -= r["amount"]
     return piles
 
 def lambda_handler(event, context):
@@ -177,7 +195,8 @@ def lambda_handler(event, context):
         if pile and pile["amount"] > 0:
             h["avgCostUsd"] = pile["cost"] / pile["amount"]
             h["unrealizedPnlUsd"] = (h["currentPriceUsd"] - h["avgCostUsd"]) * h["amount"]
-    total_pnl = sum(h["unrealizedPnlUsd"] for h in holdings)
+    realized_pnl = sum(p["realized"] for p in piles.values())
+    total_pnl = realized_pnl + sum(h["unrealizedPnlUsd"] for h in holdings)
 
     now = datetime.now(timezone.utc)
     data = {
