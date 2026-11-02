@@ -6,6 +6,7 @@
     {
       "mint": "So11111111111111111111111111111111111111112",
       "symbol": "SOL",
+      "logoUrl": null,
       "amount": 12.5,
       "avgCostUsd": 145.20,
       "currentPriceUsd": 162.80,
@@ -14,6 +15,7 @@
     {
       "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       "symbol": "USDC",
+      "logoUrl": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
       "amount": 350.00,
       "avgCostUsd": 1.00,
       "currentPriceUsd": 1.00,
@@ -22,6 +24,7 @@
     {
       "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
       "symbol": "JUP",
+      "logoUrl": null,
       "amount": 500.00,
       "avgCostUsd": 0.95,
       "currentPriceUsd": 0.79,
