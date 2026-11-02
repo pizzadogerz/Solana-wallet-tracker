@@ -15,6 +15,35 @@ def is_solana_address(addr):
     byte_len = (num.bit_length() + 7) // 8
     return leading_zeros + byte_len == 32
 
+def fetch_swaps(wallet, api_key):
+    url = (
+        f"https://mainnet.helius-rpc.com/v0/addresses/{wallet}/transactions"
+        f"?api-key={api_key}&type=SWAP&limit=100"
+    )
+    with urllib.request.urlopen(url, timeout=20) as resp:
+        return json.loads(resp.read())
+
+def net_flows(swap, wallet):
+    net = {}
+    for t in swap.get("tokenTransfers", []):
+        if t["toUserAccount"] == wallet:
+            net[t["mint"]] = net.get(t["mint"], 0) + t["tokenAmount"]
+        if t["fromUserAccount"] == wallet:
+            net[t["mint"]] = net.get(t["mint"], 0) - t["tokenAmount"]
+    for n in swap.get("nativeTransfers", []):
+        sol = n["amount"] / 10 ** 9
+        if n["toUserAccount"] == wallet:
+            net["SOL"] = net.get("SOL", 0) + sol
+        if n["fromUserAccount"] == wallet:
+            net["SOL"] = net.get("SOL", 0) - sol
+    wsol = net.pop("So11111111111111111111111111111111111111112", 0)
+    native_sol = net.get("SOL", 0)
+    net["SOL"] = wsol if abs(wsol) > abs(native_sol) else native_sol
+    net = {k: v for k, v in net.items() if abs(v) > 1e-9}
+    return net
+
+
+
 def lambda_handler(event, context):
     api_key = os.environ.get("HELIUS_API_KEY")
     wallet = (event.get("pathParameters") or {}).get("address")
@@ -93,6 +122,11 @@ def lambda_handler(event, context):
         })
 
     total_value = sum(h["amount"] * h["currentPriceUsd"] for h in holdings)
+    swaps = fetch_swaps(wallet, api_key)
+    for s in swaps:
+        net = net_flows(s, wallet)
+        if net:
+            print(net)
     now = datetime.now(timezone.utc)
     data = {
         "wallet": wallet,
@@ -113,7 +147,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     fake_event = {
-        "pathParameters": {"address": "CmujpE7gPGTFVVF5R1X2bSxByDjyjCQWmwvTLzW9bG68"}
+        "pathParameters": {"address": "89HbgWduLwoxcofWpmn1EiF9wEdpgkNDEyPjzZ72mkDi"}
     }
     print(lambda_handler(fake_event, None))
     
