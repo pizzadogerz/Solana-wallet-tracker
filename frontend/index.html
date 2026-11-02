@@ -78,7 +78,7 @@
             <span class="rank-title" id="rankTitle"></span>
           </button>
           <p class="rank-why" id="rankWhy" hidden></p>
-          <p class="pnl-label">total PnL</p>
+          <p class="pnl-label">total PnL · up to 7 days</p>
           <p class="pnl" id="pnlValue">$0.00</p>
           <p class="verdict-line" id="verdictLine"></p>
           <p class="asof" id="asOf"></p>
@@ -94,14 +94,14 @@
           </div>
         <div class="verdict-side">
           <p class="stat"><span id="pfValue">$0</span> portfolio value</p>
-          <p class="stat"><span id="pfChange">0%</span> over <span id="pfDays">0</span> days</p>
           <button type="button" class="ghost" id="newSearchBtn">Check another wallet</button>
           <button type="button" class="ghost" id="nextDemoBtn" hidden>Next demo wallet</button>
         </div>
       </div>
 
-      <div class="grid">
-        <section class="panel chart-panel" aria-labelledby="chartTitle">
+      <div class="grid no-chart" id="resultsGrid">
+        <!-- Hidden until the backend sends daily history. To bring it back: remove "hidden" here and "no-chart" above, and set SHOW_CHART = true in app.js -->
+        <section class="panel chart-panel" aria-labelledby="chartTitle" hidden>
           <h2 id="chartTitle">Portfolio value</h2>
           <div class="chart-box"><canvas id="pfChart" aria-label="Portfolio value over time" role="img"></canvas></div>
         </section>
