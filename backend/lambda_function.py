@@ -1,7 +1,10 @@
 import json
 import os
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+
+executor = ThreadPoolExecutor(max_workers=2)     # lets us fetch trades while holdings load
 
 B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
@@ -68,22 +71,29 @@ def to_record(swap, wallet):
         "sol": abs(sol),
     }
 
-def fetch_sol_prices():
-    url = "https://api.coingecko.com/api/v3/coins/solana/market_chart?vs_currency=usd&days=365&interval=daily"
-    req = urllib.request.Request(url, headers={"User-Agent": "wallet-tracker"})
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        data = json.loads(resp.read())
+def fetch_sol_prices(start):
+    # SOL price for every minute from `start` until now (Binance, free, 1000 minutes per call)
     prices = {}
-    for ms, price in data["prices"]:
-        day = datetime.fromtimestamp(ms / 1000, timezone.utc).strftime("%Y-%m-%d")
-        prices[day] = price
+    start_ms = int(start // 60) * 60 * 1000
+    while True:
+        url = (
+            "https://data-api.binance.vision/api/v3/klines"
+            f"?symbol=SOLUSDT&interval=1m&limit=1000&startTime={start_ms}"
+        )
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            candles = json.loads(resp.read())
+        for c in candles:
+            prices[c[0] // 60000] = float(c[4])      # key = minute number, value = closing price
+        if len(candles) < 1000:
+            break                                    # reached the current minute
+        start_ms = candles[-1][0] + 60000
     return prices
 
 def avg_costs(records, sol_prices):
     piles = {}
     for r in sorted(records[::-1], key=lambda r: r["time"]):    # oldest first (flip first so same-second trades keep order)
-        day = datetime.fromtimestamp(r["time"], timezone.utc).strftime("%Y-%m-%d")
-        usd = r["sol"] * sol_prices.get(day, 0)                  # this trade in USD
+        price = sol_prices.get(r["time"] // 60, 0)              # SOL price in that exact minute
+        usd = r["sol"] * price                                   # this trade in USD
         pile = piles.setdefault(r["mint"], {"amount": 0, "cost": 0, "realized": 0})
 
         if r["side"] == "buy":
@@ -114,6 +124,8 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "invalid_wallet", "message": "Wallet address is missing or invalid"})
         }
 
+
+    swaps_job = executor.submit(fetch_swaps, wallet, api_key)    # start trades now, in the background
 
     items = []
     page = 1
@@ -152,6 +164,7 @@ def lambda_handler(event, context):
    
     WSOL_MINT = "So11111111111111111111111111111111111111112"
     wsol_amount = 0
+    sol_logo = None
     holdings = []
 
     for item in items:
@@ -160,12 +173,15 @@ def lambda_handler(event, context):
         if not price_info:
             continue
         amount = token_info["balance"] / 10 ** token_info["decimals"]        # raw balance ÷ 10 to the power of decimals
+        logo = ((item.get("content") or {}).get("links") or {}).get("image")   # token logo from Helius, may be missing
         if item["id"] == WSOL_MINT:
             wsol_amount += amount
+            sol_logo = logo
             continue
         holdings.append({
             "mint": item["id"],
             "symbol": token_info.get("symbol"),
+            "logoUrl": logo,
             "amount": amount,
             "avgCostUsd": 0,
             "currentPriceUsd": price_info["price_per_token"],    # from price_info
@@ -175,6 +191,7 @@ def lambda_handler(event, context):
         holdings.append({
             "mint": WSOL_MINT,
             "symbol": "SOL",
+            "logoUrl": sol_logo,
             "amount": native.get("lamports", 0) / 10 ** 9 + wsol_amount,
             "avgCostUsd": 0,
             "currentPriceUsd": native["price_per_sol"],
@@ -184,9 +201,10 @@ def lambda_handler(event, context):
     total_value = sum(h["amount"] * h["currentPriceUsd"] for h in holdings)
 
     try:
-        swaps = fetch_swaps(wallet, api_key)
+        swaps = swaps_job.result()                                # wait for the background trades
         records = [r for r in (to_record(s, wallet) for s in swaps) if r]
-        piles = avg_costs(records, fetch_sol_prices())
+        oldest = min((r["time"] for r in records), default=0)
+        piles = avg_costs(records, fetch_sol_prices(oldest)) if records else {}
     except Exception:
         piles = {}      # PnL is extra; if it fails, still return holdings
 
