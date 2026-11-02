@@ -42,7 +42,49 @@ def net_flows(swap, wallet):
     net = {k: v for k, v in net.items() if abs(v) > 1e-9}
     return net
 
+def to_record(swap, wallet):
+    net = net_flows(swap, wallet)
+    sol = net.pop("SOL", 0)
+    if len(net) != 1 or sol == 0:
+        return None
+    mint, amount = list(net.items())[0]
+    return {
+        "time": swap["timestamp"],
+        "mint": mint,
+        "side": "buy" if amount > 0 else "sell",
+        "amount": abs(amount),
+        "sol": abs(sol),
+    }
 
+def fetch_sol_prices():
+    url = "https://api.coingecko.com/api/v3/coins/solana/market_chart?vs_currency=usd&days=365&interval=daily"
+    req = urllib.request.Request(url, headers={"User-Agent": "wallet-tracker"})
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.loads(resp.read())
+    prices = {}
+    for ms, price in data["prices"]:
+        day = datetime.fromtimestamp(ms / 1000, timezone.utc).strftime("%Y-%m-%d")
+        prices[day] = price
+    return prices
+
+def avg_costs(records, sol_prices):
+    piles = {}
+    for r in sorted(records, key=lambda r: r["time"]):          # oldest first
+        day = datetime.fromtimestamp(r["time"], timezone.utc).strftime("%Y-%m-%d")
+        usd = r["sol"] * sol_prices.get(day, 0)                  # this trade in USD
+        pile = piles.setdefault(r["mint"], {"amount": 0, "cost": 0})
+
+        if r["side"] == "buy":
+            pile["cost"] += usd
+            pile["amount"] += r["amount"]
+        else:
+            if pile["amount"] == 0:
+                continue                    # sold something we never saw bought, skip
+            sold = min(r["amount"], pile["amount"])
+            avg = pile["cost"] / pile["amount"]
+            pile["cost"] -= sold * avg
+            pile["amount"] -= sold
+    return piles
 
 def lambda_handler(event, context):
     api_key = os.environ.get("HELIUS_API_KEY")
@@ -122,16 +164,26 @@ def lambda_handler(event, context):
         })
 
     total_value = sum(h["amount"] * h["currentPriceUsd"] for h in holdings)
-    swaps = fetch_swaps(wallet, api_key)
-    for s in swaps:
-        net = net_flows(s, wallet)
-        if net:
-            print(net)
+
+    try:
+        swaps = fetch_swaps(wallet, api_key)
+        records = [r for r in (to_record(s, wallet) for s in swaps) if r]
+        piles = avg_costs(records, fetch_sol_prices())
+    except Exception:
+        piles = {}      # PnL is extra; if it fails, still return holdings
+
+    for h in holdings:
+        pile = piles.get(h["mint"])
+        if pile and pile["amount"] > 0:
+            h["avgCostUsd"] = pile["cost"] / pile["amount"]
+            h["unrealizedPnlUsd"] = (h["currentPriceUsd"] - h["avgCostUsd"]) * h["amount"]
+    total_pnl = sum(h["unrealizedPnlUsd"] for h in holdings)
+
     now = datetime.now(timezone.utc)
     data = {
         "wallet": wallet,
         "asOf": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "totalPnlUsd": 0,
+        "totalPnlUsd": total_pnl,
         "holdings": holdings,
         "history": [
             {"date": now.strftime("%Y-%m-%d"), "portfolioValueUsd": total_value}
