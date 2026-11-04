@@ -5,7 +5,7 @@
 // When Kalachuchi's API Gateway is live, paste its URL here, e.g.
 // "https://abc123.execute-api.ap-southeast-1.amazonaws.com"
 // While it's empty, the page uses the mock data below (same shape as sample.json).
-const API_BASE = "";
+const API_BASE = "https://ssgwpqtg0m.execute-api.ap-southeast-1.amazonaws.com";
 
 const SAMPLE_WALLET = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
 
