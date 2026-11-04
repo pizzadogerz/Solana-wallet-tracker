@@ -119,7 +119,7 @@ function setTheme(name) {
     b.setAttribute("aria-checked", String(b.dataset.themePick === name));
   });
   try { localStorage.setItem("swt-theme", name); } catch (e) { /* storage blocked, no big deal */ }
-  if (chart) renderChart(currentData); // repaint chart in new colors
+  if (chart && SHOW_CHART) renderChart(currentData); // repaint chart in new colors
 }
 document.querySelectorAll("[data-theme-pick]").forEach((b) => {
   b.addEventListener("click", () => setTheme(b.dataset.themePick));
@@ -501,8 +501,21 @@ async function runSearch(address) {
 let currentData = null;
 let chart = null;
 
+// Token names and logos come from whoever created the token, so clean them before they touch the page
+const safeText = (t) => String(t ?? "").replace(/[<>&"'`]/g, "").trim();
+const safeLogo = (u) => (typeof u === "string" && /^https:\/\//i.test(u) ? u : null);
+function cleanHoldings(data) {
+  data.holdings = (data.holdings || []).map((h) => ({
+    ...h,
+    mint: safeText(h.mint),
+    symbol: safeText(h.symbol).slice(0, 12) || shortAddr(safeText(h.mint)),
+    logoUrl: safeLogo(h.logoUrl),
+  }));
+  return data;
+}
+
 function renderResults(data) {
-  currentData = data;
+  currentData = cleanHoldings(data);
   const history = data.history || [];
   const holdings = data.holdings || [];
   const pnl = data.totalPnlUsd || 0;
@@ -532,17 +545,12 @@ function renderResults(data) {
     + (API_BASE ? "" : ". Demo data, not live from the chain.");
   startSlotClock(data.asOf);
 
-  const first = history[0]?.portfolioValueUsd || 0;
   const last = history[history.length - 1]?.portfolioValueUsd || 0;
   $("pfValue").textContent = usd(last);
-  const change = first ? ((last - first) / first) * 100 : 0;
-  $("pfChange").textContent = pct(change);
-  $("pfChange").className = tone(change);
-  $("pfDays").textContent = history.length;
 
   renderRank(data);
   renderSolLab(data);
-  renderChart(data);
+  if (SHOW_CHART) renderChart(data);
   renderHoldings();
   renderHistory();
 
@@ -665,6 +673,8 @@ function countUp(el, target) {
 }
 
 // ---------- Chart ----------
+// Off until the backend sends more than one day of history (see the hidden chart panel in index.html)
+const SHOW_CHART = false;
 function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
 function renderChart(data) {
@@ -762,6 +772,7 @@ function renderHoldings() {
         <dt>Mint address</dt><dd class="mint-row"><span title="${h.mint}">${shortAddr(h.mint)}</span><button type="button" class="copy-mini" data-copy="${h.mint}">Copy</button></dd>
         <p class="quip">${quip}</p>
       </dl></div></div>`;
+    if (h.logoUrl) addLogo(li.querySelector(".token-dot"), h.logoUrl);
     const row = li.querySelector(".holding-row");
     row.addEventListener("click", () => {
       const open = li.classList.toggle("open");
@@ -774,6 +785,15 @@ function renderHoldings() {
   requestAnimationFrame(() => {
     els.holdings.querySelectorAll(".alloc span").forEach((s) => { s.style.width = s.dataset.w + "%"; });
   });
+}
+
+// Swap the 3-letter badge for the token's logo once it loads; if it fails, the badge just stays
+function addLogo(dot, url) {
+  const img = new Image();
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => { dot.textContent = ""; dot.classList.add("has-logo"); dot.appendChild(img); };
+  img.src = url;
 }
 
 // ---------- History table ----------
