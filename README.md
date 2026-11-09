@@ -1,6 +1,8 @@
 # Solana Wallet Tracker
 
-Paste any Solana wallet address and see what it holds and how much it has made or lost (PnL) over the last 7 days. Serverless on AWS: static frontend on S3 + CloudFront, Python Lambda behind API Gateway, DynamoDB cache, on-chain data from Helius.
+Paste any Solana wallet address and see what it holds and how much it has made or lost (PnL) over the last 7 days. Serverless on AWS: static frontend on AWS Amplify, Python Lambda behind API Gateway, DynamoDB cache, on-chain data from Helius.
+
+**Live:** https://main.drcq246sjvyhk.amplifyapp.com
 
 ## Tech Stack
 
@@ -8,12 +10,12 @@ Paste any Solana wallet address and see what it holds and how much it has made o
 - **Backend:** Python (AWS Lambda, ap-southeast-1)
 - **Cache:** DynamoDB (`wallet-trades` table, 30-day TTL)
 - **API Layer:** API Gateway (HTTP API) — `GET /wallet/{address}`
-- **Hosting:** S3 + CloudFront
+- **Hosting:** AWS Amplify (auto-deploys from `main`). Moving to S3 + CloudFront once CloudFront is unlocked on the account.
 - **Data Sources:** Helius (holdings, prices, transactions), Binance (SOL price per minute)
 
 ## Team split
 
-- **pizzadogerz** — frontend (`frontend/`, S3 + CloudFront deploy)
+- **pizzadogerz** — frontend (`frontend/`, Amplify deploy)
 - **Kalachuchi** — backend (`backend/`, Lambda, API Gateway, DynamoDB)
 
 Shared files (edits require PR + other's approval):
@@ -37,7 +39,9 @@ solana-wallet-tracker/
 │   └── style.css
 ├── backend/               # Python Lambda
 │   ├── lambda_function.py # handler: holdings, trades, PnL
-│   └── cache.py           # DynamoDB load/save
+│   ├── cache.py           # DynamoDB load/save
+│   ├── requirements.txt
+│   └── deploy.sh
 ├── sample.json            # API response contract — source of truth for field names
 ├── .gitignore
 └── README.md
@@ -47,7 +51,7 @@ solana-wallet-tracker/
 
 ```
 User (browser)
-   1. S3 + CloudFront            static frontend
+   1. AWS Amplify                static frontend
    2. API Gateway (HTTP API)     GET /wallet/{address}
    3. Lambda (Python)
         ├─ DynamoDB              load saved trades + bookmark for this wallet
@@ -88,6 +92,8 @@ Repeat check: ~3s (only fetches what's new since last time).
    ```
    cd backend
    python -m venv venv
+   venv\Scripts\activate          # Windows
+   source venv/bin/activate       # Mac/Linux
    pip install python-dotenv boto3
    ```
    Create `backend/.env` with `HELIUS_API_KEY=your_key` (gitignored — never commit it), then run `python lambda_function.py`.
